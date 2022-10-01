@@ -26,4 +26,5 @@ jobs:
           cache: "pnpm"
 
       - run: pnpm i
-      - run: pnpm test
+      - run: npx prettier --check .
+      - run: npx vitest run

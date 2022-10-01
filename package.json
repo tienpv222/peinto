@@ -1,27 +1,45 @@
 {
   "name": "peinto",
-  "private": true,
   "version": "0.0.0",
-  "type": "module",
+  "private": true,
   "repository": "github:tienpv222/peinto",
+  "type": "module",
   "scripts": {
-    "dev": "vite",
     "build": "tsc && vite build",
+    "dev": "vite",
+    "prepare": "husky install",
     "preview": "vite preview",
-    "test": "vitest run",
     "test:ui": "vitest --ui"
   },
-  "devDependencies": {
-    "@vitest/ui": "^0.23.4",
-    "happy-dom": "^6.0.4",
-    "typescript": "^4.8.4",
-    "vite": "^3.1.4",
-    "vitest": "^0.23.4"
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "lint-staged": {
+    "*.{json,yml,ts,tsx,html,md}": "prettier --write",
+    "package.json": "sort-package-json"
+  },
+  "prettier": {
+    "endOfLine": "auto"
   },
   "dependencies": {
     "@radix-ui/colors": "^0.1.8",
     "@stitches/core": "^1.2.8",
     "the-new-css-reset": "^1.7.3",
     "voby": "^0.42.6"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.1.2",
+    "@commitlint/config-conventional": "^17.1.0",
+    "@vitest/ui": "^0.23.4",
+    "happy-dom": "^6.0.4",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1",
+    "sort-package-json": "^2.0.0",
+    "typescript": "^4.8.4",
+    "vite": "^3.1.4",
+    "vitest": "^0.23.4"
   }
 }
