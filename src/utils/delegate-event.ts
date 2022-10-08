@@ -1,31 +1,35 @@
-const BUBBLE = Symbol();
-const HANDLERS = Symbol();
+import { OptionalArgs } from "./common";
 
-const delegateds = new Set<string>();
+declare global {
+  interface Event {
+    [BUBBLE]?: true;
+  }
+
+  interface EventTarget {
+    [HANDLERS]?: Record<string, Handler[] | undefined>;
+  }
+}
 
 type Handler = [handle: Function, args?: any[], bubble?: boolean];
 
-type DelegatedEvent = Omit<Event, "composedPath"> & {
-  [BUBBLE]?: boolean;
-  composedPath(): DelegatedTarget[];
-};
+const BUBBLE = Symbol();
+const HANDLERS = Symbol();
 
-type DelegatedTarget = EventTarget & {
-  [HANDLERS]?: Record<string, Handler[] | undefined>;
-};
+const delegateds: string[] = [];
 
-export const delegate = <T extends (this: DelegatedEvent, ...args: any) => any>(
+export const delegate = <T extends (this: Event, ...args: any) => any>(
   type: string,
   handler: T,
-  args?: Parameters<T>,
-  bubble?: boolean
+  ...[args, bubble]: true extends OptionalArgs<Parameters<T>>
+    ? [args?: Parameters<T>, bubble?: boolean]
+    : [args: Parameters<T>, bubble?: boolean]
 ) => {
-  if (!delegateds.has(type)) {
+  if (!delegateds.includes(type)) {
     document.addEventListener(type, onDelegate);
-    delegateds.add(type);
+    delegateds.push(type);
   }
 
-  return (target: DelegatedTarget) => {
+  return (target: EventTarget) => {
     const handlers = target[HANDLERS] ?? (target[HANDLERS] = {});
     const handlerList = handlers[type] ?? (handlers[type] = []);
 
@@ -33,7 +37,7 @@ export const delegate = <T extends (this: DelegatedEvent, ...args: any) => any>(
   };
 };
 
-const onDelegate = (event: DelegatedEvent) => {
+const onDelegate = (event: Event) => {
   for (const target of event.composedPath()) {
     const handlerList = target[HANDLERS]?.[event.type];
     if (!handlerList) continue;
@@ -43,14 +47,7 @@ const onDelegate = (event: DelegatedEvent) => {
   }
 };
 
-function runHandler(
-  this: DelegatedEvent,
-  [handle, args = [], bubble]: Handler
-) {
-  setBubble(this, bubble);
+function runHandler(this: Event, [handle, args = [], bubble]: Handler) {
   handle.call(this, ...args);
+  this[BUBBLE] = bubble || this[BUBBLE];
 }
-
-export const setBubble = (event: DelegatedEvent, bubble?: boolean) => {
-  event[BUBBLE] = bubble ?? event[BUBBLE];
-};

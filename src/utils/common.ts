@@ -16,6 +16,6 @@ export function assertHTMLElement(
   throw Error(`${name} not HTMLElement`);
 }
 
-export type OmitFirstArg<T> = T extends (x: any, ...args: infer A) => any
-  ? A
-  : never;
+export type OptionalArgs<T> = T extends [infer F, ...infer R]
+  ? (undefined extends F ? true : never) & OptionalArgs<R>
+  : true;
