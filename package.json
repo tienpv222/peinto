@@ -17,7 +17,7 @@
     ]
   },
   "lint-staged": {
-    "*.{json,yml,ts,tsx,html,md}": "prettier --write",
+    "*": "prettier --write --ignore-unknown",
     "package.json": "sort-package-json"
   },
   "prettier": {
