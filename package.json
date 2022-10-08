@@ -21,7 +21,10 @@
     "package.json": "sort-package-json"
   },
   "prettier": {
-    "endOfLine": "auto"
+    "endOfLine": "auto",
+    "plugins": [
+      "prettier-plugin-organize-imports"
+    ]
   },
   "dependencies": {
     "@radix-ui/colors": "^0.1.8",
@@ -37,6 +40,7 @@
     "jsdom": "^20.0.1",
     "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
+    "prettier-plugin-organize-imports": "^3.1.1",
     "sort-package-json": "^2.0.0",
     "typescript": "^4.8.4",
     "vite": "^3.1.6",

@@ -1,4 +1,4 @@
-import { test, expect } from "vitest";
+import { expect, test } from "vitest";
 import { render } from "voby";
 import { delegate, setBubble } from "./delegate-event";
 
