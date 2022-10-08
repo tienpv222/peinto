@@ -15,3 +15,7 @@ export function assertHTMLElement(
   if (value instanceof HTMLElement) return;
   throw Error(`${name} not HTMLElement`);
 }
+
+export type OmitFirstArg<T> = T extends (x: any, ...args: infer A) => any
+  ? A
+  : never;
