@@ -1,53 +1,65 @@
-import { OptionalArgs } from "./common";
+/** LOCALS */
+
+const BUBBLES = Symbol();
+const HANDLERS = Symbol();
+
+let delegateds: Record<string, true | undefined> = {};
+
+/** TYPES */
 
 declare global {
-  interface Event {
-    [BUBBLE]?: true;
-  }
-
   interface EventTarget {
-    [HANDLERS]?: Record<string, Handler[] | undefined>;
+    [BUBBLES]?: Record<string, true | undefined>;
+    [HANDLERS]?: Record<string, [Function, any[]][] | undefined>;
   }
 }
 
-type Handler = [handle: Function, args?: any[], bubble?: boolean];
-
-const BUBBLE = Symbol();
-const HANDLERS = Symbol();
-
-const delegateds: string[] = [];
+/** METHODS */
 
 export const delegate = <T extends (this: Event, ...args: any) => any>(
   type: string,
   handler: T,
-  ...[args, bubble]: true extends OptionalArgs<Parameters<T>>
-    ? [args?: Parameters<T>, bubble?: boolean]
-    : [args: Parameters<T>, bubble?: boolean]
+  ...args: Parameters<T>
 ) => {
-  if (!delegateds.includes(type)) {
+  if (!delegateds[type]) {
     document.addEventListener(type, onDelegate);
-    delegateds.push(type);
+    delegateds[type] = true;
   }
 
   return (target: EventTarget) => {
     const handlers = target[HANDLERS] ?? (target[HANDLERS] = {});
     const handlerList = handlers[type] ?? (handlers[type] = []);
 
-    handlerList.push([handler, args, bubble]);
+    handlerList.push([handler, args]);
   };
 };
 
 const onDelegate = (event: Event) => {
+  const { type } = event;
+
   for (const target of event.composedPath()) {
-    const handlerList = target[HANDLERS]?.[event.type];
+    const handlerList = target[HANDLERS]?.[type];
     if (!handlerList) continue;
 
-    handlerList.forEach(runHandler, event);
-    if (!event[BUBBLE]) break;
+    for (const [handle, args = []] of handlerList) {
+      handle.call(event, ...args);
+    }
+
+    if (!target[BUBBLES]?.[type]) break;
   }
 };
 
-function runHandler(this: Event, [handle, args = [], bubble]: Handler) {
-  handle.call(this, ...args);
-  this[BUBBLE] = bubble || this[BUBBLE];
-}
+export const bubble = (type: string) => {
+  return (target: EventTarget) => {
+    const bubbles = target[BUBBLES] ?? (target[BUBBLES] = {});
+    bubbles[type] = true;
+  };
+};
+
+export const clearDelegateds = () => {
+  for (const type in delegateds) {
+    document.removeEventListener(type, onDelegate);
+  }
+
+  delegateds = {};
+};
