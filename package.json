@@ -17,14 +17,11 @@
     ]
   },
   "lint-staged": {
-    "*": "prettier --write --ignore-unknown",
+    "*": "prettier --write --ignore-unknown --plugin prettier-plugin-organize-imports",
     "package.json": "sort-package-json"
   },
   "prettier": {
-    "endOfLine": "auto",
-    "plugins": [
-      "prettier-plugin-organize-imports"
-    ]
+    "endOfLine": "auto"
   },
   "dependencies": {
     "@radix-ui/colors": "^0.1.8",
