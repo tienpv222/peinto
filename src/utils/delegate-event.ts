@@ -1,4 +1,4 @@
-/** LOCALS */
+/** VARS */
 
 const BUBBLES = Symbol();
 const HANDLERS = Symbol();
@@ -16,6 +16,21 @@ declare global {
 
 /** METHODS */
 
+const onDelegate = (event: Event) => {
+  const { type } = event;
+
+  for (const target of event.composedPath()) {
+    const handlerList = target[HANDLERS]?.[type];
+    if (!handlerList) continue;
+
+    for (const [handle, args = []] of handlerList) {
+      handle.call(event, ...args);
+    }
+
+    if (!target[BUBBLES]?.[type]) break;
+  }
+};
+
 export const delegate = <T extends (this: Event, ...args: any) => any>(
   type: string,
   handler: T,
@@ -32,21 +47,6 @@ export const delegate = <T extends (this: Event, ...args: any) => any>(
 
     handlerList.push([handler, args]);
   };
-};
-
-const onDelegate = (event: Event) => {
-  const { type } = event;
-
-  for (const target of event.composedPath()) {
-    const handlerList = target[HANDLERS]?.[type];
-    if (!handlerList) continue;
-
-    for (const [handle, args = []] of handlerList) {
-      handle.call(event, ...args);
-    }
-
-    if (!target[BUBBLES]?.[type]) break;
-  }
 };
 
 export const bubble = (type: string) => {

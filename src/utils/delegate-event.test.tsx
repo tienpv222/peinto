@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 import { render } from "voby";
 import { bubble, clearDelegateds, delegate } from "./delegate-event";
 
-const setup = async (
+const setup = (
   renderFunc: (handler: (value: string) => any) => JSX.Element
 ) => {
   function handler(this: Event, value: string) {
@@ -31,7 +31,7 @@ const setup = async (
 };
 
 test("Delegate events", async () => {
-  const context = await setup((handler) => (
+  const context = setup((handler) => (
     <h1 ref={delegate("click", handler, "h1")}>
       <h2 ref={delegate("keypress", handler, "h2")}>
         <h3 ref={delegate("click", handler, "h3")}>
@@ -74,7 +74,7 @@ test("Delegate events", async () => {
 });
 
 test("Bubble events", async () => {
-  const context = await setup((handler) => (
+  const context = setup((handler) => (
     <h1 ref={delegate("click", handler, "h1")}>
       <h2 ref={delegate("keypress", handler, "h2")}>
         <h3 ref={[delegate("click", handler, "h3"), bubble("click")]}>

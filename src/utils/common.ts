@@ -1,21 +1,10 @@
 export type Immutable<T> = {
-  readonly [K in keyof T]: T[K] extends Function
-    ? AnyThis<T[K]>
-    : Immutable<T[K]>;
+  readonly [K in keyof T]: T[K] extends Function ? T[K] : Immutable<T[K]>;
 };
 
-export type AnyThis<T> = T extends (...args: infer A) => infer R
-  ? (this: any, ...args: A) => R
-  : never;
+export type Mutable<T> = T extends Immutable<infer U> ? U : T;
 
-export function assertHTMLElement(
-  name: string,
-  value: unknown
-): asserts value is HTMLElement {
-  if (value instanceof HTMLElement) return;
-  throw Error(`${name} not HTMLElement`);
-}
+export type ImmutableMaybe<T> = T | Immutable<T>;
 
-export type OptionalArgs<T> = T extends [infer F, ...infer R]
-  ? (undefined extends F ? true : never) & OptionalArgs<R>
-  : true;
+// @ts-ignore
+export function assumeMutable<T>(_value: T): asserts _value is Mutable<T> {}
