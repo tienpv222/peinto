@@ -1,6 +1,4 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# TODO: https://github.com/okonet/lint-staged/issues/1164
-echo "Running pre-commit..."
-npx lint-staged --quiet
+pnpm exec lint-staged

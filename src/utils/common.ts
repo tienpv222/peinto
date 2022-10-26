@@ -1,17 +1,12 @@
-export type Immutable<T> = {
-  readonly [K in keyof T]: T[K] extends Function
-    ? AnyThis<T[K]>
-    : Immutable<T[K]>;
+import { hashNumber } from "./hash";
+
+export function assumeType<T>(_value: any): asserts _value is T {}
+
+export const isFunction = (value: unknown): value is Function => {
+  return typeof value === "function";
 };
 
-export type AnyThis<T> = T extends (...args: infer A) => infer R
-  ? (this: any, ...args: A) => R
-  : never;
-
-export function assertHTMLElement(
-  name: string,
-  value: unknown
-): asserts value is HTMLElement {
-  if (value instanceof HTMLElement) return;
-  throw Error(`${name} not HTMLElement`);
-}
+export const createId = (() => {
+  let i = 0;
+  return () => hashNumber(++i);
+})();
