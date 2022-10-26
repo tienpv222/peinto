@@ -4,7 +4,7 @@ import { isFunction } from "./common";
 
 /** VARS */
 
-export const SYMBOL_UNCONTROLLED = Symbol();
+const SYMBOL_UNCONTROLLED = Symbol();
 
 /** TYPES */
 
@@ -16,12 +16,12 @@ export type ComponentProps<T> = T extends keyof JSX.IntrinsicElements
 
 /** METHODS */
 
-export const isUncontrolled = <T>(value: Observable<T>) => {
+export const isUncontrolled = <T>(value: () => T): value is Observable<T> => {
   return SYMBOL_UNCONTROLLED in value;
 };
 
 export const controlledMaybe = <T>(value: FunctionMaybe<T>) => {
-  if (isFunction(value)) return value as Observable<T>;
+  if (isFunction(value)) return value;
 
   const uncontrolled = $(value);
   (uncontrolled as any)[SYMBOL_UNCONTROLLED] = true;
