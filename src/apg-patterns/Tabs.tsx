@@ -21,13 +21,19 @@ import {
 
 /** VARS */
 
-export const DATA_TABS_ID = "data-tabsid";
-export const DATA_TAB_VALUE = "data-tabvalue";
 export const DATA_SELECTED = "data-selected";
 
-export const TabsContext = createContext<Tabs>();
+const SYMBOL_TAB_VALUE = Symbol();
+
+const TabsContext = createContext<Tabs>();
 
 /** TYPES */
+
+declare global {
+  interface HTMLElement {
+    [SYMBOL_TAB_VALUE]?: string;
+  }
+}
 
 export type Tabs = {
   label: FunctionMaybe<string>;
@@ -70,12 +76,12 @@ export type TabPanelProps<T> = {
 
 /** METHODS */
 
-const getIdSet = (tabbedId: string, value: string) => {
+const getIdSet = (tabsId: string, value: string) => {
   const hashed = hashString(value);
 
   return {
-    tabId: `_Tab_${tabbedId}_${hashed}`,
-    panelId: `_TabPanel_${tabbedId}_${hashed}`,
+    tabId: `_Tab_${tabsId}_${hashed}`,
+    panelId: `_TabPanel_${tabsId}_${hashed}`,
   };
 };
 
@@ -147,13 +153,14 @@ export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
       component={props.as ?? "li"}
       props={{
         ...rest,
+        ref(el: HTMLElement) {
+          el[SYMBOL_TAB_VALUE] = value;
+        },
         id: tabId,
         tabIndex: () => (selecteds[value] ? 0 : -1),
         role: "tab",
         "aria-controls": panelId,
         "aria-selected": () => String(!!selecteds[value]),
-        [DATA_TABS_ID]: id,
-        [DATA_TAB_VALUE]: value,
         onClick() {
           selectTab(tabs, value);
         },
@@ -172,7 +179,7 @@ export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
 
           if (!movement) return;
 
-          const pattern = `[${DATA_TABS_ID}="${id}"]`;
+          const pattern = `[id^=_Tab_${id}_]`;
           const query = document.querySelectorAll<HTMLElement>(pattern);
           const els = Array.from(query);
           const el = els[els.indexOf(target as any) + movement];
@@ -181,7 +188,7 @@ export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
           el.focus();
 
           if (!$$(autoActivate)) return;
-          selectTab(tabs, el.getAttribute(DATA_TAB_VALUE)!);
+          selectTab(tabs, el[SYMBOL_TAB_VALUE]!);
         },
       }}
       children={children}
@@ -201,9 +208,9 @@ export const TabPanel = <T extends Component = "li">(
       component={props.as ?? "li"}
       props={{
         ...rest,
-        id: tabId,
+        id: panelId,
         role: "tabpanel",
-        "aria-labelledby": panelId,
+        "aria-labelledby": tabId,
         [DATA_SELECTED]: () => selecteds[value],
       }}
       children={
