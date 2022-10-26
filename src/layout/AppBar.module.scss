@@ -1,0 +1,54 @@
+.AppBtnSelect {
+  &::before {
+    --at-apply: icon-cursor;
+  }
+
+  &[aria-selected="true"]::before {
+    --at-apply: icon-cursor-filled;
+  }
+}
+
+.AppBtnDraw {
+  &::before {
+    --at-apply: icon-pen;
+  }
+
+  &[aria-selected="true"]::before {
+    --at-apply: icon-pen-filled;
+  }
+}
+
+.AppBtnErase {
+  &::before {
+    --at-apply: icon-eraser;
+  }
+
+  &[aria-selected="true"]::before {
+    --at-apply: icon-eraser-filled;
+  }
+}
+
+.AppBar {
+  --at-apply: w-12 py-2 flex flex-col items-center bg-dark-5;
+
+  [role="tab"] {
+    --at-apply: p-1.5 my-1 rounded;
+
+    &:focus-visible {
+      --at-apply: outline outline-2 outline-blue;
+    }
+
+    &::before {
+      --at-apply: w-5 h-5 block bg-dark-50;
+      content: "";
+    }
+
+    &:hover::before {
+      --at-apply: bg-neutral-5;
+    }
+
+    &[aria-selected="true"]::before {
+      --at-apply: bg-blue;
+    }
+  }
+}

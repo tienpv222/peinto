@@ -158,7 +158,7 @@ export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
           selectTab(tabs, value);
         },
         onKeyDown({ key, target }: KeyboardEvent) {
-          if (key === "" || key === "Enter") {
+          if (key === " " || key === "Enter") {
             selectTab(tabs, value);
             return;
           }

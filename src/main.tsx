@@ -1,8 +1,6 @@
 import "the-new-css-reset/css/reset.css";
+import "uno.css";
 import { render } from "voby";
+import { App } from "./layout/App";
 
-const App = () => {
-  return <div>peinto</div>;
-};
-
-render(<App />, document.body);
+render(App, document.body);
