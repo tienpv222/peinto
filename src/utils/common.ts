@@ -1,10 +1,12 @@
-export type Immutable<T> = {
-  readonly [K in keyof T]: T[K] extends Function ? T[K] : Immutable<T[K]>;
+import { hashNumber } from "./hash";
+
+export function assumeType<T>(_value: any): asserts _value is T {}
+
+export const isFunction = (value: unknown): value is Function => {
+  return typeof value === "function";
 };
 
-export type Mutable<T> = T extends Immutable<infer U> ? U : T;
-
-export type ImmutableMaybe<T> = T | Immutable<T>;
-
-// @ts-ignore
-export function assumeMutable<T>(_value: T): asserts _value is Mutable<T> {}
+export const createId = (() => {
+  let i = 0;
+  return () => hashNumber(++i);
+})();
