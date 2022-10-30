@@ -4,7 +4,7 @@
   > section:first-child {
     --at-apply: flex-1;
 
-    li {
+    section {
       --at-apply: h-full flex justify-center items-center text-neutral-5;
 
       &:not([data-selected]) {

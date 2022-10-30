@@ -1,148 +1,105 @@
 import {
+  $,
   $$,
-  batch,
   createContext,
+  Dynamic,
   FunctionMaybe,
   If,
+  Observable,
   store,
   useContext,
   useEffect,
 } from "voby";
-import { Component } from "voby/dist/types";
-import { createId, GET_STR, JoinOver } from "../utils/common";
-import { hashString } from "../utils/hash";
 import {
-  ComponentProps,
-  controlledMaybe,
-  Dynamic,
-  isUncontrolled,
-} from "../utils/voby";
+  assumeType,
+  Component,
+  createId,
+  joinRefs,
+  PolyProps,
+} from "../utils/common";
+import { hashString } from "../utils/hash";
 import { ariaLabel, ariaOrientation } from "../utils/wai-aria";
 
 /** VARS */
 
-export const DATA_VALUE = "data-value";
 export const DATA_SELECTED = "data-selected";
-
-const SYMBOL_TAB_VALUE = Symbol();
 
 const TabsContext = createContext<Context>();
 
+const tabValues = new WeakMap<HTMLElement, FunctionMaybe<string>>();
+
 /** TYPES */
 
-declare global {
-  interface HTMLElement {
-    [SYMBOL_TAB_VALUE]?: string;
-  }
-}
-
-type Context = {
+type Context = Readonly<{
   id: string;
-  value: () => string;
+  value: Observable<string>;
   selecteds: Partial<Record<string, true>>;
-  vertical: FunctionMaybe<boolean>;
-  manualActivate: FunctionMaybe<boolean>;
+  hasheds: Partial<Record<string, string>>;
+
+  label: FunctionMaybe<string>;
+  vertical?: FunctionMaybe<boolean>;
+  manualActivate?: FunctionMaybe<boolean>;
+  controlled?: FunctionMaybe<boolean>;
   onChange?(value: string): void;
+}>;
+
+export type TabsProviderProps = {
+  label: FunctionMaybe<string>;
+  value?: FunctionMaybe<string>;
+  vertical?: FunctionMaybe<boolean>;
+  manualActivate?: FunctionMaybe<boolean>;
+  controlled?: FunctionMaybe<boolean>;
+  onChange?(value: string): void;
+  children?: JSX.Element;
 };
 
-export type TabsProps = { children?: JSX.Element };
+export type TabListProps<T> = PolyProps<T>;
 
-export type TabListProps<T> = JoinOver<
-  {
-    as?: T;
-    label: FunctionMaybe<string>;
-    value?: FunctionMaybe<string>;
-    vertical?: FunctionMaybe<boolean>;
-    manualActivate?: FunctionMaybe<boolean>;
-    onChange?(value: string): void;
-    children?: JSX.Element;
-  },
-  ComponentProps<T>
->;
+export type TabProps<T> = PolyProps<T, { value: FunctionMaybe<string> }>;
 
-export type TabProps<T> = JoinOver<
-  {
-    as?: T;
-    value: string;
-    children?: JSX.Element;
-  },
-  ComponentProps<T>
->;
-
-export type TabPanelProps<T> = JoinOver<
-  {
-    as?: T;
-    value: string;
-    children?: JSX.Element;
-  },
-  ComponentProps<T>
->;
+export type TabPanelProps<T> = PolyProps<T, { value: FunctionMaybe<string> }>;
 
 /** METHODS */
 
-const getIds = (ctx: Context, value: string) => {
-  const hashed = hashString(value);
+const getIds = ({ id, hasheds }: Context, value: FunctionMaybe<string>) => {
+  const _value = $$(value);
+  const hashed = hasheds[_value] ?? (hasheds[_value] = hashString(_value));
 
   return {
-    tabId: `_Tab_${ctx.id}_${hashed}`,
-    panelId: `_TabPanel_${ctx.id}_${hashed}`,
+    tabId: `_Tab_${id}_${hashed}`,
+    panelId: `_TabPanel_${id}_${hashed}`,
   };
-};
-
-const selectTab = (ctx: Context, value: string) => {
-  batch(() => {
-    if (ctx.value() === value) return;
-
-    isUncontrolled(ctx.value) && ctx.value(value);
-    ctx.onChange?.(value);
-  });
 };
 
 /** COMPONENTS */
 
-export const Tabs = ({ children }: TabsProps) => {
-  // const value = controlledMaybe(props.value ?? "");
-  // const selecteds: Context["selecteds"] = store({});
+export const TabsProvider = (props: TabsProviderProps) => {
+  const ctx: Context = {
+    ...props,
+    id: createId(),
+    value: $($$(props.value ?? "")),
+    selecteds: store({}),
+    hasheds: {},
+  };
 
-  // useEffect(() => {
-  //   store.reconcile(selecteds, { [value()]: true });
-  // });
+  useEffect(() => {
+    if (!$$(props.controlled)) return;
 
-  return (
-    <TabsContext.Provider
-      value={{
-        id: createId(),
-        value: GET_STR,
-        selecteds: store({}),
-        vertical: false,
-        manualActivate: false,
-      }}
-      children={children}
-    />
-  );
+    props.value && ctx.value($$(props.value));
+  });
+
+  useEffect(() => {
+    const value = ctx.value();
+    store.reconcile(ctx.selecteds, { [value]: true });
+    props.onChange?.(value);
+  });
+
+  return <TabsContext.Provider value={ctx} children={props.children} />;
 };
 
 export function TabList<T extends Component = "ul">(props: TabListProps<T>) {
-  const ctx = useContext(TabsContext)!;
-  const {
-    as,
-    label,
-    value,
-    vertical,
-    manualActivate,
-    onChange,
-    children,
-    ...rest
-  } = props;
-
-  ctx.value = controlledMaybe(value ?? "");
-  ctx.vertical = vertical ?? ctx.vertical;
-  ctx.manualActivate = manualActivate ?? ctx.manualActivate;
-  ctx.onChange = onChange;
-
-  useEffect(() => {
-    store.reconcile(ctx.selecteds, { [ctx.value()]: true });
-  });
+  const tabs = useContext(TabsContext)!;
+  const { as, children, ...rest } = props;
 
   return (
     <Dynamic
@@ -151,8 +108,8 @@ export function TabList<T extends Component = "ul">(props: TabListProps<T>) {
         ...rest,
         tabIndex: -1,
         role: "tablist",
-        ...ariaLabel(label),
-        ...ariaOrientation(ctx.vertical),
+        ...ariaLabel(tabs.label),
+        ...ariaOrientation(tabs.vertical),
       }}
       children={children}
     />
@@ -162,27 +119,28 @@ export function TabList<T extends Component = "ul">(props: TabListProps<T>) {
 export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
   const ctx = useContext(TabsContext)!;
   const { as, value, children, ...rest } = props;
-  const { tabId, panelId } = getIds(ctx, value);
 
   return (
     <Dynamic
       component={props.as ?? "li"}
       props={{
         ...rest,
-        ref(el: HTMLElement) {
-          el[SYMBOL_TAB_VALUE] = value;
-        },
-        id: tabId,
-        tabIndex: () => (ctx.selecteds[value] ? 0 : -1),
+        ref: joinRefs((el) => {
+          tabValues.set(el, value);
+        }, rest.ref),
+        id: () => getIds(ctx, value).tabId,
+        tabIndex: () => (ctx.selecteds[$$(value)] ? 0 : -1),
         role: "tab",
-        "aria-controls": panelId,
-        "aria-selected": () => String(!!ctx.selecteds[value]),
+        "aria-controls": () => getIds(ctx, value).panelId,
+        "aria-selected": () => String(!!ctx.selecteds[$$(value)]),
         onClick() {
-          selectTab(ctx, value);
+          ctx.value($$(value));
         },
         onKeyDown({ key, target }: KeyboardEvent) {
+          assumeType<HTMLElement>(target);
+
           if (key === " " || key === "Enter") {
-            selectTab(ctx, value);
+            ctx.value($$(value));
             return;
           }
 
@@ -196,15 +154,15 @@ export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
           if (!movement) return;
 
           const pattern = `[id^=_Tab_${ctx.id}_]`;
-          const query = document.querySelectorAll<HTMLElement>(pattern);
-          const els = Array.from(query);
-          const el = els[els.indexOf(target as any) + movement];
+          const matches = document.querySelectorAll<HTMLElement>(pattern);
+          const tabEls = Array.from(matches);
+          const nextEl = tabEls[tabEls.indexOf(target) + movement];
 
-          if (!el) return;
-          el.focus();
+          if (!nextEl) return;
+          nextEl.focus();
 
-          if (!$$(ctx.manualActivate)) return;
-          selectTab(ctx, el[SYMBOL_TAB_VALUE]!);
+          if ($$(ctx.manualActivate)) return;
+          ctx.value($$(tabValues.get(nextEl)!));
         },
       }}
       children={children}
@@ -212,25 +170,24 @@ export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
   );
 };
 
-export const TabPanel = <T extends Component = "li">(
+export const TabPanel = <T extends Component = "section">(
   props: TabPanelProps<T>
 ) => {
   const ctx = useContext(TabsContext)!;
   const { as, value, children, ...rest } = props;
-  const { tabId, panelId } = getIds(ctx, value);
 
   return (
     <Dynamic
-      component={props.as ?? "li"}
+      component={props.as ?? "section"}
       props={{
         ...rest,
-        id: panelId,
+        id: () => getIds(ctx, value).panelId,
         role: "tabpanel",
-        "aria-labelledby": tabId,
-        [DATA_SELECTED]: () => ctx.selecteds[value],
+        "aria-labelledby": () => getIds(ctx, value).tabId,
+        [DATA_SELECTED]: () => ctx.selecteds[$$(value)],
       }}
     >
-      <If when={() => ctx.selecteds[value]} children={children} />
+      <If when={() => ctx.selecteds[$$(value)]} children={children} />
     </Dynamic>
   );
 };

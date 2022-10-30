@@ -1,6 +1,6 @@
 import { $$, FunctionMaybe } from "voby";
 
-export const ariaOrientation = (vertical: FunctionMaybe<boolean>) => {
+export const ariaOrientation = (vertical?: FunctionMaybe<boolean>) => {
   return {
     "aria-orientation": () => ($$(vertical) ? "vertical" : "horizontal"),
   };
