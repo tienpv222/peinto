@@ -1,7 +1,7 @@
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test } from "vitest";
 import { $, render } from "voby";
-import { Tab, TabList, TabPanel, TabsProvider } from "./Tabs";
+import { Tab, TabList, TabPanel, Tabs } from "./Tabs";
 
 describe("Tabs", async () => {
   const label = $("");
@@ -11,7 +11,7 @@ describe("Tabs", async () => {
   const controlled = $(true);
 
   render(
-    <TabsProvider
+    <Tabs
       label={label}
       value={value}
       vertical={vertical}
@@ -26,7 +26,7 @@ describe("Tabs", async () => {
 
       <TabPanel value="0" children="0" />
       <TabPanel value="1" children="1" />
-    </TabsProvider>,
+    </Tabs>,
     document.body
   );
 

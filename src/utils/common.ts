@@ -1,37 +1,26 @@
-import { Component, ComponentFunction } from "voby/dist/types";
 import { hashNumber } from "./hash";
 
 /** TYPES */
 
-export type JoinOver<T, T0, T1 = T0, T2 = T1> = T &
+export type Nullable<T> = JSX.Nullable<T>;
+
+export type JoinOver<T, T0 = {}, T1 = {}, T2 = {}, T3 = {}, T4 = {}> = T &
   Omit<T0, keyof T> &
   Omit<T1, keyof T | keyof T0> &
-  Omit<T2, keyof T | keyof T0 | keyof T1>;
-
-export type { Component };
-
-export type ComponentProps<T> = T extends keyof JSX.IntrinsicElements
-  ? JSX.IntrinsicElements[T]
-  : T extends ComponentFunction<infer P>
-  ? P
-  : {};
-
-export type PolyProps<T, P = {}> = JoinOver<
-  P,
-  Partial<{
-    as: T;
-    ref: JSX.Refs<HTMLElement>;
-    children: JSX.Element;
-  }>,
-  ComponentProps<T>
->;
+  Omit<T2, keyof T | keyof T0 | keyof T1> &
+  Omit<T3, keyof T | keyof T0 | keyof T1 | keyof T2> &
+  Omit<T4, keyof T | keyof T0 | keyof T1 | keyof T2 | keyof T3>;
 
 /** METHODS */
 
-export function assumeType<T>(_value: any): asserts _value is T {}
+export function assumeType<T>(_value: unknown): asserts _value is T {}
 
 export const isFunction = (value: unknown): value is Function => {
   return typeof value === "function";
+};
+
+export const isNullLike = (value: unknown): value is null | undefined => {
+  return value === null || value === undefined;
 };
 
 export const createId = (() => {
@@ -39,9 +28,11 @@ export const createId = (() => {
   return () => hashNumber(++i);
 })();
 
-export const joinRefs = (
-  ref: JSX.Ref<HTMLElement>,
-  refs: JSX.Refs<HTMLElement>
-) => {
-  return [ref, refs].flat();
+export const filterNullLike = <T extends Record<string, unknown>>(value: T) => {
+  for (const prop in value) {
+    if (!isNullLike(value[prop])) continue;
+    delete value[prop];
+  }
+
+  return value as Partial<T>;
 };

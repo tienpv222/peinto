@@ -1,3 +1,4 @@
+import { Nullable } from "vitest";
 import {
   $,
   $$,
@@ -10,15 +11,10 @@ import {
   useContext,
   useEffect,
 } from "voby";
-import {
-  assumeType,
-  Component,
-  createId,
-  joinRefs,
-  PolyProps,
-} from "../utils/common";
-import { hashString } from "../utils/hash";
-import { ariaLabel, ariaOrientation } from "../utils/wai-aria";
+import { assumeType, createId, JoinOver } from "/src/utils/common";
+import { hashString } from "/src/utils/hash";
+import { Component, joinRefs, PolyProps } from "/src/utils/voby";
+import { ariaLabel, ariaOrientation } from "/src/utils/wai-aria";
 
 /** VARS */
 
@@ -37,21 +33,19 @@ type Context = Readonly<{
   hasheds: Partial<Record<string, string>>;
 
   label: FunctionMaybe<string>;
-  vertical?: FunctionMaybe<boolean>;
-  manualActivate?: FunctionMaybe<boolean>;
-  controlled?: FunctionMaybe<boolean>;
-  onChange?(value: string): void;
+  vertical?: FunctionMaybe<Nullable<boolean>>;
+  manualActivate?: FunctionMaybe<Nullable<boolean>>;
+  controlled?: FunctionMaybe<Nullable<boolean>>;
+  onChange?: Nullable<(value: string) => void>;
 }>;
 
-export type TabsProviderProps = {
-  label: FunctionMaybe<string>;
-  value?: FunctionMaybe<string>;
-  vertical?: FunctionMaybe<boolean>;
-  manualActivate?: FunctionMaybe<boolean>;
-  controlled?: FunctionMaybe<boolean>;
-  onChange?(value: string): void;
-  children?: JSX.Element;
-};
+export type TabsProps = JoinOver<
+  {
+    value?: FunctionMaybe<Nullable<string>>;
+    children?: JSX.Element;
+  },
+  Omit<Context, "id" | "selecteds" | "hasheds">
+>;
 
 export type TabListProps<T> = PolyProps<T>;
 
@@ -62,8 +56,8 @@ export type TabPanelProps<T> = PolyProps<T, { value: FunctionMaybe<string> }>;
 /** METHODS */
 
 const getIds = ({ id, hasheds }: Context, value: FunctionMaybe<string>) => {
-  const _value = $$(value);
-  const hashed = hasheds[_value] ?? (hasheds[_value] = hashString(_value));
+  const _val = $$(value);
+  const hashed = hasheds[_val] ?? (hasheds[_val] = hashString(_val));
 
   return {
     tabId: `_Tab_${id}_${hashed}`,
@@ -73,32 +67,33 @@ const getIds = ({ id, hasheds }: Context, value: FunctionMaybe<string>) => {
 
 /** COMPONENTS */
 
-export const TabsProvider = (props: TabsProviderProps) => {
+export const Tabs = (props: TabsProps) => {
+  const { value, children, ...rest } = props;
+
   const ctx: Context = {
-    ...props,
+    ...rest,
     id: createId(),
-    value: $($$(props.value ?? "")),
+    value: $($$(value) ?? ""),
     selecteds: store({}),
     hasheds: {},
   };
 
   useEffect(() => {
-    if (!$$(props.controlled)) return;
-
-    props.value && ctx.value($$(props.value));
+    if (!$$(ctx.controlled)) return;
+    ctx.value($$(value) ?? "");
   });
 
   useEffect(() => {
     const value = ctx.value();
     store.reconcile(ctx.selecteds, { [value]: true });
-    props.onChange?.(value);
+    ctx.onChange?.(value);
   });
 
-  return <TabsContext.Provider value={ctx} children={props.children} />;
+  return <TabsContext.Provider value={ctx} children={children} />;
 };
 
 export function TabList<T extends Component = "ul">(props: TabListProps<T>) {
-  const tabs = useContext(TabsContext)!;
+  const ctx = useContext(TabsContext)!;
   const { as, children, ...rest } = props;
 
   return (
@@ -108,8 +103,8 @@ export function TabList<T extends Component = "ul">(props: TabListProps<T>) {
         ...rest,
         tabIndex: -1,
         role: "tablist",
-        ...ariaLabel(tabs.label),
-        ...ariaOrientation(tabs.vertical),
+        ...ariaLabel(ctx.label),
+        ...ariaOrientation(ctx.vertical),
       }}
       children={children}
     />
