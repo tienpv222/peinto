@@ -7,6 +7,7 @@ specifiers:
   "@testing-library/dom": ^8.19.0
   "@testing-library/user-event": ^14.4.3
   "@use-gesture/vanilla": ^10.2.20
+  "@vitest/ui": ^0.24.3
   base-x: ^4.0.0
   happy-dom: ^7.6.6
   husky: ^8.0.1
@@ -36,6 +37,7 @@ devDependencies:
   "@iconify-json/fluent": 1.1.16
   "@testing-library/dom": 8.19.0
   "@testing-library/user-event": 14.4.3_aaq3sbffpfe3jnxzm2zngsddei
+  "@vitest/ui": 0.24.3
   happy-dom: 7.6.6
   husky: 8.0.1
   lint-staged: 13.0.3
@@ -46,7 +48,7 @@ devDependencies:
   typescript: 4.8.4
   unocss: 0.46.1_vite@3.2.1
   vite: 3.2.1_sass@1.55.0
-  vitest: 0.24.3_zebtykaddigsqkr6wvvaq64c4m
+  vitest: 0.24.3_qp2erbg6meghbxlm2tmdqgp77e
 
 packages:
   /@ampproject/remapping/2.2.0:
@@ -892,6 +894,15 @@ packages:
     dependencies:
       "@use-gesture/core": 10.2.20
     dev: false
+
+  /@vitest/ui/0.24.3:
+    resolution:
+      {
+        integrity: sha512-f5agYA/sdkiipq42TZayJoeUGjWx+opDjIVeNnb1SG2BNxqObFqh6GuJlzpGHerg4a2+ZSoVo4f4p2+dEyXPmg==,
+      }
+    dependencies:
+      sirv: 2.0.2
+    dev: true
 
   /JSONStream/1.3.5:
     resolution:
@@ -4704,7 +4715,7 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /vitest/0.24.3_zebtykaddigsqkr6wvvaq64c4m:
+  /vitest/0.24.3_qp2erbg6meghbxlm2tmdqgp77e:
     resolution:
       {
         integrity: sha512-aM0auuPPgMSstWvr851hB74g/LKaKBzSxcG3da7ejfZbx08Y21JpZmbmDYrMTCGhVZKqTGwzcnLMwyfz2WzkhQ==,
@@ -4732,6 +4743,7 @@ packages:
       "@types/chai": 4.3.3
       "@types/chai-subset": 1.3.3
       "@types/node": 14.18.32
+      "@vitest/ui": 0.24.3
       chai: 4.3.6
       debug: 4.3.4
       happy-dom: 7.6.6

@@ -1,12 +1,10 @@
 import { Nullable } from "vitest";
 import {
-  $,
   $$,
   createContext,
   Dynamic,
   FunctionMaybe,
   If,
-  Observable,
   store,
   useContext,
   useEffect,
@@ -28,7 +26,6 @@ const tabValues = new WeakMap<HTMLElement, FunctionMaybe<string>>();
 
 type Context = Readonly<{
   id: string;
-  value: Observable<string>;
   selecteds: Partial<Record<string, true>>;
   hasheds: Partial<Record<string, string>>;
 
@@ -49,20 +46,32 @@ export type TabsProps = JoinOver<
 
 export type TabListProps<T> = PolyProps<T>;
 
-export type TabProps<T> = PolyProps<T, { value: FunctionMaybe<string> }>;
+export type TabProps<T> = PolyProps<
+  T,
+  {
+    value: FunctionMaybe<string>;
+    disabled?: FunctionMaybe<Nullable<boolean>>;
+  }
+>;
 
 export type TabPanelProps<T> = PolyProps<T, { value: FunctionMaybe<string> }>;
 
 /** METHODS */
 
 const getIds = ({ id, hasheds }: Context, value: FunctionMaybe<string>) => {
-  const _val = $$(value);
-  const hashed = hasheds[_val] ?? (hasheds[_val] = hashString(_val));
+  const value_ = $$(value);
+  const hashed = hasheds[value_] ?? (hasheds[value_] = hashString(value_));
 
   return {
     tabId: `_Tab_${id}_${hashed}`,
     panelId: `_TabPanel_${id}_${hashed}`,
   };
+};
+
+const selectTab = (ctx: Context, value: FunctionMaybe<string>) => {
+  const value_ = $$(value);
+  $$(ctx.controlled) || store.reconcile(ctx.selecteds, { [value_]: true });
+  ctx.onChange?.(value_);
 };
 
 /** COMPONENTS */
@@ -73,20 +82,13 @@ export const Tabs = (props: TabsProps) => {
   const ctx: Context = {
     ...rest,
     id: createId(),
-    value: $($$(value) ?? ""),
     selecteds: store({}),
     hasheds: {},
   };
 
   useEffect(() => {
     if (!$$(ctx.controlled)) return;
-    ctx.value($$(value) ?? "");
-  });
-
-  useEffect(() => {
-    const value = ctx.value();
-    store.reconcile(ctx.selecteds, { [value]: true });
-    ctx.onChange?.(value);
+    store.reconcile(ctx.selecteds, { [$$(value) ?? ""]: true });
   });
 
   return <TabsContext.Provider value={ctx} children={children} />;
@@ -113,7 +115,7 @@ export function TabList<T extends Component = "ul">(props: TabListProps<T>) {
 
 export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
   const ctx = useContext(TabsContext)!;
-  const { as, value, children, ...rest } = props;
+  const { as, value, disabled, children, ...rest } = props;
 
   return (
     <Dynamic
@@ -122,42 +124,56 @@ export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
         ...rest,
         ref: joinRefs((el) => {
           tabValues.set(el, value);
+
+          useEffect(() => {
+            $$(disabled) && el.blur();
+          });
         }, rest.ref),
         id: () => getIds(ctx, value).tabId,
         tabIndex: () => (ctx.selecteds[$$(value)] ? 0 : -1),
         role: "tab",
         "aria-controls": () => getIds(ctx, value).panelId,
         "aria-selected": () => String(!!ctx.selecteds[$$(value)]),
+        "aria-disabled": () => String(!!$$(disabled)),
         onClick() {
-          ctx.value($$(value));
+          selectTab(ctx, value);
         },
         onKeyDown({ key, target }: KeyboardEvent) {
           assumeType<HTMLElement>(target);
 
           if (key === " " || key === "Enter") {
-            ctx.value($$(value));
+            selectTab(ctx, value);
             return;
           }
 
-          const movement = {
+          const direction = {
             ArrowUptrue: -1,
             ArrowDowntrue: 1,
             ArrowLeftfalse: -1,
             ArrowRightfalse: 1,
           }[key + $$(ctx.vertical)];
 
-          if (!movement) return;
+          if (!direction) return;
 
           const pattern = `[id^=_Tab_${ctx.id}_]`;
-          const matches = document.querySelectorAll<HTMLElement>(pattern);
-          const tabEls = Array.from(matches);
-          const nextEl = tabEls[tabEls.indexOf(target) + movement];
+          const tabEls = document.querySelectorAll<HTMLElement>(pattern);
 
-          if (!nextEl) return;
-          nextEl.focus();
+          for (let i = 0, move = 0; ; i += move || 1) {
+            if (!tabEls[i]) return;
 
-          if ($$(ctx.manualActivate)) return;
-          ctx.value($$(tabValues.get(nextEl)!));
+            if (!move) {
+              if (tabEls[i] === target) move = direction;
+              continue;
+            }
+
+            if (tabEls[i].getAttribute("aria-disabled") === "true") continue;
+            tabEls[i].focus();
+
+            if ($$(ctx.manualActivate)) return;
+            selectTab(ctx, tabValues.get(tabEls[i])!);
+
+            return;
+          }
         },
       }}
       children={children}

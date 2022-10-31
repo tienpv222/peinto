@@ -1,5 +1,5 @@
-import { Tab, TabList } from "../apg-patterns/Tabs";
 import css from "./AppBar.module.scss";
+import { Tab, TabList } from "/src/apg-patterns/Tabs";
 
 export const AppBar = () => {
   return (

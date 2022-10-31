@@ -1,5 +1,5 @@
-import { TabPanel } from "../apg-patterns/Tabs";
 import css from "./AppPanel.module.scss";
+import { TabPanel } from "/src/apg-patterns/Tabs";
 
 export const AppPanel = () => {
   return (
