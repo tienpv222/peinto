@@ -147,11 +147,11 @@ export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
           }
 
           const direction = {
-            ArrowUptrue: -1,
-            ArrowDowntrue: 1,
-            ArrowLeftfalse: -1,
-            ArrowRightfalse: 1,
-          }[key + $$(ctx.vertical)];
+            ArrowUpfalse: -1,
+            ArrowDownfalse: 1,
+            ArrowLefttrue: -1,
+            ArrowRighttrue: 1,
+          }[key + !$$(ctx.vertical)];
 
           if (!direction) return;
 
