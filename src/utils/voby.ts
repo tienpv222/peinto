@@ -1,12 +1,9 @@
-import { $, createElement, FunctionMaybe, Observable } from "voby";
 import { Component, ComponentFunction } from "voby/dist/types";
-import { isFunction } from "./common";
-
-/** VARS */
-
-export const SYMBOL_UNCONTROLLED = Symbol();
+import { JoinAfter, Nullable } from "./common";
 
 /** TYPES */
+
+export type { Component };
 
 export type ComponentProps<T> = T extends keyof JSX.IntrinsicElements
   ? JSX.IntrinsicElements[T]
@@ -14,29 +11,31 @@ export type ComponentProps<T> = T extends keyof JSX.IntrinsicElements
   ? P
   : {};
 
+export type PolyProps<T, P0 = {}, P1 = {}, P2 = {}> = JoinAfter<
+  ComponentProps<T>,
+  P0,
+  P1,
+  P2,
+  Partial<{
+    as: T;
+    ref: JSX.Refs<HTMLElement>;
+    style: Nullable<JSX.StyleProperties>;
+    children: JSX.Element;
+  }>
+>;
+
 /** METHODS */
 
-export const isUncontrolled = <T>(value: Observable<T>) => {
-  return SYMBOL_UNCONTROLLED in value;
+export const joinRefs = (
+  ref: JSX.Ref<HTMLElement>,
+  refs: JSX.Refs<HTMLElement>
+) => {
+  return [ref, refs].flat();
 };
 
-export const controlledMaybe = <T>(value: FunctionMaybe<T>) => {
-  if (isFunction(value)) return value as Observable<T>;
-
-  const uncontrolled = $(value);
-  (uncontrolled as any)[SYMBOL_UNCONTROLLED] = true;
-  return uncontrolled;
-};
-
-// Workaround for Voby bug
-export const Dynamic = <P = {}>({
-  component,
-  props,
-  children,
-}: {
-  component: Component<P>;
-  props?: P;
-  children?: JSX.Element;
-}) => {
-  return createElement<P>(component, props, children);
+export const joinStyles = (
+  style1: Nullable<JSX.StyleProperties>,
+  style2: Nullable<JSX.StyleProperties>
+) => {
+  return { ...style1, ...style2 };
 };

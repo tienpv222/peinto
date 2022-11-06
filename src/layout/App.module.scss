@@ -1,0 +1,18 @@
+.App {
+  --at-apply: w-screen h-screen relative flex bg-dark-1;
+
+  * {
+    --at-apply: select-none;
+  }
+
+  > [role="separator"] {
+    --at-apply: w-1 h-full absolute translate-x--50% cursor-col-resize
+      touch-none;
+    left: var(--value);
+
+    &:active,
+    &:focus-visible {
+      --at-apply: bg-blue;
+    }
+  }
+}
