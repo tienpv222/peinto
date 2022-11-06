@@ -29,18 +29,13 @@
 }
 
 .AppBar {
-  --at-apply: w-12 py-2 flex flex-col items-center bg-dark-5;
+  --at-apply: w-12 py-2 flex flex-col items-center;
 
-  [role="tab"] {
+  > [role="tab"] {
     --at-apply: p-1.5 my-1 rounded;
 
     &:focus-visible {
       --at-apply: outline outline-2 outline-blue;
-    }
-
-    &::before {
-      --at-apply: w-5 h-5 block bg-dark-50;
-      content: "";
     }
 
     &:hover::before {
@@ -49,6 +44,11 @@
 
     &[aria-selected="true"]::before {
       --at-apply: bg-blue;
+    }
+
+    &::before {
+      --at-apply: w-5 h-5 block bg-neutral-6;
+      content: "";
     }
   }
 }

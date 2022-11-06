@@ -15,7 +15,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "skipLibCheck": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "jsxImportSource": "voby",
     "types": ["vite/client"],
     "baseUrl": ".",

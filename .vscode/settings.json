@@ -1,5 +1,5 @@
 {
   "explorer.fileNesting.patterns": {
-    "*.tsx": "${capture}.test.ts, ${capture}.test.tsx, ${capture}.module.scss"
+    "*.tsx": "${capture}.*.ts, ${capture}.*.tsx, ${capture}.*.scss"
   }
 }

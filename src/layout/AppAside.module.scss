@@ -1,0 +1,35 @@
+.AppAside {
+  --at-apply: flex bg-dark-5;
+  width: var(--value);
+}
+
+.AppPanel {
+  --at-apply: flex-1 relative flex flex-col;
+
+  > section:first-child {
+    height: var(--value);
+
+    > section {
+      --at-apply: h-full flex justify-center items-center text-neutral-3;
+
+      &:not([data-selected]) {
+        --at-apply: hidden;
+      }
+    }
+  }
+
+  > section:last-child {
+    --at-apply: flex-1 flex justify-center items-center text-neutral-3;
+  }
+
+  > [role="separator"] {
+    --at-apply: h-1 absolute inset-x-2 border-1 border-dark-5 bg-dark-9
+      translate-y--50% cursor-row-resize touch-none;
+    top: var(--value);
+
+    &:active,
+    &:focus-visible {
+      --at-apply: inset-x-0 bg-blue border-transparent;
+    }
+  }
+}

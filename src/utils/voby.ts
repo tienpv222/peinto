@@ -1,5 +1,5 @@
 import { Component, ComponentFunction } from "voby/dist/types";
-import { JoinOver, Nullable } from "./common";
+import { JoinAfter, Nullable } from "./common";
 
 /** TYPES */
 
@@ -11,17 +11,17 @@ export type ComponentProps<T> = T extends keyof JSX.IntrinsicElements
   ? P
   : {};
 
-export type PolyProps<T, P = {}, P0 = {}, P1 = {}> = JoinOver<
-  P,
+export type PolyProps<T, P0 = {}, P1 = {}, P2 = {}> = JoinAfter<
+  ComponentProps<T>,
   P0,
   P1,
+  P2,
   Partial<{
     as: T;
     ref: JSX.Refs<HTMLElement>;
     style: Nullable<JSX.StyleProperties>;
     children: JSX.Element;
-  }>,
-  ComponentProps<T>
+  }>
 >;
 
 /** METHODS */
@@ -33,12 +33,9 @@ export const joinRefs = (
   return [ref, refs].flat();
 };
 
-export const joinStyleOver = (
-  style1: JSX.StyleProperties,
+export const joinStyles = (
+  style1: Nullable<JSX.StyleProperties>,
   style2: Nullable<JSX.StyleProperties>
 ) => {
-  return {
-    ...style2,
-    ...style1,
-  };
+  return { ...style1, ...style2 };
 };

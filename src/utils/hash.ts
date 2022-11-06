@@ -2,7 +2,9 @@ import baseX from "base-x";
 import murmur from "murmur-32";
 
 export const BASE62 =
-  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  "0123456789" + // @style: line-break
+  "abcdefghijklmnopqrstuvwxyz" +
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 export const base62 = baseX(BASE62);
 

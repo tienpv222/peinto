@@ -1,7 +1,7 @@
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test } from "vitest";
 import { $, batch, render } from "voby";
-import { Tab, TabList, TabPanel, Tabs } from "./Tabs";
+import { Tabs } from "./Tabs";
 
 describe("Tabs", async () => {
   const label = $("");
@@ -12,7 +12,7 @@ describe("Tabs", async () => {
   const disableds = [$(false), $(false), $(false)];
 
   render(
-    <Tabs
+    <Tabs.Provider
       label={label}
       value={value}
       vertical={vertical}
@@ -20,16 +20,16 @@ describe("Tabs", async () => {
       controlled={controlled}
       onChange={value}
     >
-      <TabList>
-        <Tab value="0" disabled={disableds[0]} />
-        <Tab value="1" disabled={disableds[1]} />
-        <Tab value="2" disabled={disableds[2]} />
-      </TabList>
+      <Tabs.List>
+        <Tabs.Tab value="0" disabled={disableds[0]} />
+        <Tabs.Tab value="1" disabled={disableds[1]} />
+        <Tabs.Tab value="2" disabled={disableds[2]} />
+      </Tabs.List>
 
-      <TabPanel value="0" children="0" />
-      <TabPanel value="1" children="1" />
-      <TabPanel value="2" children="2" />
-    </Tabs>,
+      <Tabs.Panel value="0" children="0" />
+      <Tabs.Panel value="1" children="1" />
+      <Tabs.Panel value="2" children="2" />
+    </Tabs.Provider>,
     document.body
   );
 
@@ -56,8 +56,8 @@ describe("Tabs", async () => {
   test.each([
     ["foo", "foo", null],
     ["#foo", null, "foo"],
-  ])("Label [%s]", (label_, expected, expectedRef) => {
-    label(label_);
+  ])("Label [%s]", (value, expected, expectedRef) => {
+    label(value);
     expect(list.getAttribute("aria-label")).toBe(expected);
     expect(list.getAttribute("aria-labelledby")).toBe(expectedRef);
   });
@@ -65,16 +65,16 @@ describe("Tabs", async () => {
   test.each([
     [true, "vertical"],
     [false, "horizontal"],
-  ])("Vertical [%s]", (vertical_, expected) => {
-    vertical(vertical_);
+  ])("Vertical [%s]", (value, expected) => {
+    vertical(value);
     expect(list.getAttribute("aria-orientation")).toBe(expected);
   });
 
   test.each([
     ["0", ["true", "false"], ["", null], ["0", ""]],
     ["1", ["false", "true"], [null, ""], ["", "1"]],
-  ])("Value [%s]", (value_, arias, datas, texts) => {
-    value(value_);
+  ])("Value [%s]", (val, arias, datas, texts) => {
+    value(val);
 
     for (const i in Array(2)) {
       expect(tabs[i].getAttribute("aria-selected")).toBe(arias[i]);
@@ -93,13 +93,13 @@ describe("Tabs", async () => {
     ["{ArrowRight}", false, "2"],
     ["{ArrowUp}", true, "0"],
     ["{ArrowDown}", true, "2"],
-  ])("Auto activate [%s x 2]", async (key, vertical_, value_) => {
-    vertical(vertical_);
+  ])("Auto activate [%s x 2]", async (key, vert, val) => {
+    vertical(vert);
     await userEvent.click(tabs[1]);
 
     for (const _ in Array(2)) {
       await userEvent.keyboard(key);
-      expect(value()).toEqual(value_);
+      expect(value()).toEqual(val);
     }
   });
 
@@ -108,9 +108,9 @@ describe("Tabs", async () => {
     ["{ArrowRight}", "{ }", false, 2],
     ["{ArrowUp}", "{Enter}", true, 0],
     ["{ArrowDown}", "{Enter}", true, 2],
-  ])("Manual activate [%s > %s]", async (key, select, vertical_, active) => {
+  ])("Manual activate [%s > %s]", async (key, select, vert, active) => {
     manualActivate(true);
-    vertical(vertical_);
+    vertical(vert);
     await userEvent.click(tabs[1]);
 
     await userEvent.keyboard(key);
@@ -125,9 +125,9 @@ describe("Tabs", async () => {
     ["blur", [0], document.body],
     ["jump", [1], tabs[2]],
     ["stay", [1, 2], tabs[0]],
-  ])("Disabled [%s]", async (_case, disableds_, activeEl) => {
+  ])("Disabled [%s]", async (_case, disabledIdxes, activeEl) => {
     await userEvent.click(tabs[0]);
-    disableds_.forEach((i) => disableds[i](true));
+    disabledIdxes.forEach((i) => disableds[i](true));
 
     await userEvent.keyboard("{ArrowRight}");
     expect(activeEl).toBe(document.activeElement);
