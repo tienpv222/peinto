@@ -50,6 +50,10 @@ describe("WindowSplitter", () => {
     });
   });
 
+  test("Roles", () => {
+    expect(splitter.getAttribute("role")).toBe("separator");
+  });
+
   test("PrimaryPane id", () => {
     expect(splitter.getAttribute("aria-controls")).toBe(panes[0].id);
   });
@@ -98,7 +102,7 @@ describe("WindowSplitter", () => {
     [0, 1, ["0.5", "0.25"]],
     [1, 0, ["0.5", "0.25"]],
     [401, 0, ["100", "100"]],
-  ] as const)("Value max-min [%s] [%s] ", (maxVal, minVal, expecteds) => {
+  ] as const)("Value max [%s] [min=%s] ", (maxVal, minVal, expecteds) => {
     min(minVal);
     max(maxVal);
     vertical(false);

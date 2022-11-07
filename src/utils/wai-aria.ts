@@ -9,11 +9,17 @@ export const ariaOrientation = (
   };
 };
 
-export const ariaLabel = (label: FunctionMaybe<string>) => {
-  const labelId = () => $$(label)[0] === "#";
+export const ariaLabel = (value: FunctionMaybe<string>) => {
+  const ref = () => $$(value)[0] === "#";
 
   return {
-    "aria-label": () => (labelId() ? null : $$(label)),
-    "aria-labelledby": () => (labelId() ? $$(label).slice(1) : null),
+    "aria-label": () => (ref() ? null : $$(value)),
+    "aria-labelledby": () => (ref() ? $$(value).slice(1) : null),
+  };
+};
+
+export const ariaDisabled = (value?: FunctionMaybe<Nullable<boolean>>) => {
+  return {
+    "aria-disabled": () => ($$(value) ? "true" : null),
   };
 };

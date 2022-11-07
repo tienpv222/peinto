@@ -11,7 +11,7 @@ import {
 import { assumeType, createId, isFunction, Nullable } from "/src/utils/common";
 import { hashString } from "/src/utils/hash";
 import { Component, joinRefs, PolyProps } from "/src/utils/voby";
-import { ariaLabel, ariaOrientation } from "/src/utils/wai-aria";
+import { ariaDisabled, ariaLabel, ariaOrientation } from "/src/utils/wai-aria";
 
 /** VARS */
 
@@ -136,7 +136,7 @@ const Tab = <T extends Component = "li">(props: TabProps<T>) => {
     role: "tab",
     "aria-controls": () => getIds(ctx, value).panelId,
     "aria-selected": () => String(!!ctx.selecteds[$$(value)]),
-    "aria-disabled": () => String(!!$$(disabled)),
+    ...ariaDisabled(disabled),
 
     onClick() {
       selectTab(ctx, value);

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, test } from "vitest";
 import { $, batch, render } from "voby";
 import { Tabs } from "./Tabs";
 
-describe("Tabs", async () => {
+describe("Tabs", () => {
   const label = $("");
   const value = $("");
   const vertical = $(false);
@@ -46,6 +46,12 @@ describe("Tabs", async () => {
       controlled(true);
       disableds.forEach((set) => set(false));
     });
+  });
+
+  test("Roles", () => {
+    expect(list.getAttribute("role")).toBe("tablist");
+    tabs.forEach((el) => expect(el.getAttribute("role")).toBe("tab"));
+    panels.forEach((el) => expect(el.getAttribute("role")).toBe("tabpanel"));
   });
 
   test("Tab/Panel ids", () => {
@@ -122,12 +128,16 @@ describe("Tabs", async () => {
   });
 
   test.each([
-    ["blur", [0], document.body],
-    ["jump", [1], tabs[2]],
-    ["stay", [1, 2], tabs[0]],
-  ])("Disabled [%s]", async (_case, disabledIdxes, activeEl) => {
+    ["blur", [0], ["true", null, null], document.body],
+    ["jump", [1], [null, "true", null], tabs[2]],
+    ["stay", [1, 2], [null, "true", "true"], tabs[0]],
+  ])("Disabled [%s]", async (_case, disabledIdxes, arias, activeEl) => {
     await userEvent.click(tabs[0]);
     disabledIdxes.forEach((i) => disableds[i](true));
+
+    for (const i in arias) {
+      expect(tabs[i].getAttribute("aria-disabled")).toBe(arias[i]);
+    }
 
     await userEvent.keyboard("{ArrowRight}");
     expect(activeEl).toBe(document.activeElement);
