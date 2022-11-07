@@ -20,4 +20,6 @@ if (import.meta.hot) {
       data.dispose = newModule.renderApp();
     }
   });
+} else {
+  renderApp();
 }

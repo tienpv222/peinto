@@ -12,13 +12,24 @@ export default defineConfig({
   },
   plugins: [
     pluginUnocss({
-      presets: [presetUno(), presetIcons()],
+      presets: [
+        presetUno(),
+        presetIcons({
+          customizations: {
+            iconCustomizer(_collection, _icon, props) {
+              const [_x, _y, width, height] = props.viewBox.split(" ");
+              props.width = `${width}px`;
+              props.height = `${height}px`;
+            },
+          },
+        }),
+      ],
       transformers: [transformerDirectives()],
       shortcuts: [
         [
           /^icon-(.+?)(-filled)?$/,
           ([, icon, filled]) => {
-            return `i-fluent:${icon}-20-${filled ? "filled" : "regular"}`;
+            return `i-fluent:${icon}-${filled ? "filled" : "regular"}`;
           },
         ],
       ],

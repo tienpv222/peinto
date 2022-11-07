@@ -1,30 +1,30 @@
 .AppBtnSelect {
   &::before {
-    --at-apply: icon-cursor;
+    --at-apply: icon-cursor-20;
   }
 
   &[aria-selected="true"]::before {
-    --at-apply: icon-cursor-filled;
+    --at-apply: icon-cursor-20-filled;
   }
 }
 
 .AppBtnDraw {
   &::before {
-    --at-apply: icon-pen;
+    --at-apply: icon-pen-20;
   }
 
   &[aria-selected="true"]::before {
-    --at-apply: icon-pen-filled;
+    --at-apply: icon-pen-20-filled;
   }
 }
 
 .AppBtnErase {
   &::before {
-    --at-apply: icon-eraser;
+    --at-apply: icon-eraser-20;
   }
 
   &[aria-selected="true"]::before {
-    --at-apply: icon-eraser-filled;
+    --at-apply: icon-eraser-20-filled;
   }
 }
 
@@ -32,10 +32,10 @@
   --at-apply: w-12 py-2 flex flex-col items-center;
 
   > [role="tab"] {
-    --at-apply: p-1.5 my-1 rounded;
+    --at-apply: px-1.5 py-2 rounded border-2 border-transparent cursor-pointer;
 
     &:focus-visible {
-      --at-apply: outline outline-2 outline-blue;
+      --at-apply: border-blue;
     }
 
     &:hover::before {
@@ -47,7 +47,7 @@
     }
 
     &::before {
-      --at-apply: w-5 h-5 block bg-neutral-6;
+      --at-apply: block bg-neutral-6;
       content: "";
     }
   }
