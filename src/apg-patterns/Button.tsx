@@ -24,6 +24,7 @@ export const Button = <T extends Component = "button">(
   return h(as ?? "button", {
     ...rest,
 
+    tabIndex: 0,
     role: "button",
     ...ariaLabel(label),
     ...ariaDisabled(disabled),

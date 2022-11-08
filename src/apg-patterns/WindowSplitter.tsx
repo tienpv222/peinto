@@ -125,7 +125,6 @@ const Window = <T extends Component = "div">(props: WindowProps<T>) => {
     vertical,
     controlled,
     onChange,
-    children,
     ...rest
   } = props;
 
@@ -171,8 +170,6 @@ const Window = <T extends Component = "div">(props: WindowProps<T>) => {
       style: joinStyles(rest.style, {
         [CSS_VAR_VALUE]: () => `${ctx.value()}%`,
       }),
-
-      children,
     }),
   });
 };
@@ -181,26 +178,25 @@ const PrimaryPane = <T extends Component = "section">(
   props: PrimaryPaneProps<T>
 ) => {
   const ctx = useContext(SplitContext)!;
-  const { as, children, ...rest } = props;
+  const { as, ...rest } = props;
 
   return h(as ?? "section", {
     ...rest,
     id: getPrimaryPaneId(ctx),
-    children,
   });
 };
 
 const SecondaryPane = <T extends Component = "section">(
   props: SecondaryPaneProps<T>
 ) => {
-  const { as, children, ...rest } = props;
+  const { as, ...rest } = props;
 
-  return h(as ?? "section", { ...rest, children });
+  return h(as ?? "section", rest);
 };
 
 const Splitter = <T extends Component = "div">(props: SplitterProps<T>) => {
   const ctx = useContext(SplitContext)!;
-  const { as, children, ...rest } = props;
+  const { as, ...rest } = props;
 
   return h(as ?? "div", {
     ...rest,
@@ -232,8 +228,6 @@ const Splitter = <T extends Component = "div">(props: SplitterProps<T>) => {
     "aria-valuemax": ctx.max,
     "aria-orientation": () => ($$(ctx.vertical) ? "vertical" : null),
     ...ariaLabel(ctx.label),
-
-    children,
   });
 };
 

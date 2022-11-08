@@ -23,7 +23,7 @@ const tabValues = new WeakMap<HTMLElement, FunctionMaybe<string>>();
 
 /** TYPES */
 
-type Context = Readonly<{
+type Context = {
   id: string;
   selecteds: Partial<Record<string, true>>;
   hasheds: Partial<Record<string, string>>;
@@ -33,7 +33,7 @@ type Context = Readonly<{
   manualActivate?: FunctionMaybe<Nullable<boolean>>;
   controlled?: FunctionMaybe<Nullable<boolean>>;
   onChange?: Nullable<(value: string) => void>;
-}>;
+};
 
 export type ProviderProps = {
   value?: FunctionMaybe<Nullable<string>>;
@@ -101,7 +101,7 @@ const Provider = (props: ProviderProps) => {
 
 const List = <T extends Component = "ul">(props: ListProps<T>) => {
   const ctx = useContext(TabsContext)!;
-  const { as, children, ...rest } = props;
+  const { as, ...rest } = props;
 
   return h(as ?? "ul", {
     ...rest,
@@ -110,14 +110,12 @@ const List = <T extends Component = "ul">(props: ListProps<T>) => {
     role: "tablist",
     ...ariaLabel(ctx.label),
     ...ariaOrientation(ctx.vertical),
-
-    children,
   });
 };
 
 const Tab = <T extends Component = "li">(props: TabProps<T>) => {
   const ctx = useContext(TabsContext)!;
-  const { as, value, disabled, children, ...rest } = props;
+  const { as, value, disabled, ...rest } = props;
 
   return h(as ?? "li", {
     ...rest,
@@ -139,6 +137,7 @@ const Tab = <T extends Component = "li">(props: TabProps<T>) => {
     ...ariaDisabled(disabled),
 
     onClick() {
+      if ($$(disabled)) return;
       selectTab(ctx, value);
     },
 
@@ -179,8 +178,6 @@ const Tab = <T extends Component = "li">(props: TabProps<T>) => {
         return;
       }
     },
-
-    children,
   });
 };
 

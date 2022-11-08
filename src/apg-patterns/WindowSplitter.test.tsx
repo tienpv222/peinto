@@ -126,4 +126,6 @@ describe("WindowSplitter", () => {
   test.todo("Window resize");
 
   test.todo("Interactions");
+
+  test.todo("Uncontrolled");
 });
