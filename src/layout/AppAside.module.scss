@@ -1,5 +1,5 @@
 .AppAside {
-  --at-apply: flex bg-dark-5;
+  --at-apply: flex bg-neutral-8;
   width: var(--value);
 }
 
@@ -10,7 +10,8 @@
     height: var(--value);
 
     > section {
-      --at-apply: h-full flex justify-center items-center text-neutral-3;
+      --at-apply: h-full flex flex-col gap-2 justify-center items-center
+        text-neutral-3;
 
       &:not([data-selected]) {
         --at-apply: hidden;
@@ -23,13 +24,12 @@
   }
 
   > [role="separator"] {
-    --at-apply: h-1 absolute inset-x-2 border-1 border-dark-5 bg-dark-9
-      translate-y--50% cursor-row-resize touch-none;
-    top: var(--value);
+    --at-apply: w-full h-1 px-2 py-0.25 absolute top-$value translate-y--50%
+      bg-neutral-9 bg-clip-content cursor-row-resize touch-none;
 
     &:active,
     &:focus-visible {
-      --at-apply: inset-x-0 bg-blue border-transparent;
+      --at-apply: bg-blue bg-clip-border;
     }
   }
 }

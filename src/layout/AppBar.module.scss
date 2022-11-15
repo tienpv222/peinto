@@ -31,24 +31,28 @@
 .AppBar {
   --at-apply: w-12 py-2 flex flex-col items-center;
 
-  > [role="tab"] {
+  > [role="tab"],
+  > a {
     --at-apply: px-1.5 py-2 rounded border-2 border-transparent cursor-pointer;
 
     &:focus-visible {
       --at-apply: border-blue;
     }
 
-    &:hover::before {
-      --at-apply: bg-neutral-5;
-    }
-
-    &[aria-selected="true"]::before {
-      --at-apply: bg-blue;
-    }
-
     &::before {
-      --at-apply: block bg-neutral-6;
-      content: "";
+      --at-apply: block content-none text-neutral-5;
     }
+
+    &:hover::before {
+      --at-apply: text-neutral-4;
+    }
+  }
+
+  > [role="tab"][aria-selected="true"]::before {
+    --at-apply: text-blue;
+  }
+
+  > a::before {
+    --at-apply: icon-info-20;
   }
 }

@@ -1,0 +1,64 @@
+.NumberInput {
+  --at-apply: w-full px-5 flex justify-between items-center;
+
+  > span {
+    --at-apply: text-neutral-5 cursor-pointer;
+  }
+
+  > [role="spinbutton"] {
+    --bg-color: theme("colors.slate.8");
+    --at-apply: w-30 h-5 flex justify-end items-center bg-center bg-no-repeat;
+
+    background-color: theme("colors.neutral.9");
+    background-image: linear-gradient(
+      to right,
+      var(--bg-color) var(--value),
+      theme("colors.neutral.9") var(--value)
+    );
+    background-size: calc(100% - 4px) calc(100% - 4px);
+
+    &:has(> input:focus) {
+      background-color: theme("colors.blue.4");
+    }
+
+    &:has(> span:active) {
+      --bg-color: theme("colors.blue.4");
+
+      > span,
+      > input,
+      button {
+        --at-apply: text-light-1;
+      }
+    }
+
+    > span {
+      --at-apply: w-8 pl-2 cursor-ew-resize touch-none text-neutral-5;
+    }
+
+    > input {
+      --at-apply: w-0 pr-0.5 flex-1 text-right;
+    }
+
+    > div {
+      --at-apply: flex flex-col;
+
+      button {
+        --at-apply: px-1.5 text-neutral-5;
+        --at-apply: hover-text-neutral-4;
+        --at-apply: active-text-neutral-3;
+
+        &::before {
+          --at-apply: block content-none;
+        }
+
+        &:first-of-type::before {
+          --at-apply: mt-1px mb--3px icon-chevron-up-12;
+        }
+
+        &:last-of-type:before {
+          --at-apply: mt--3px mb-1px icon-chevron-down-12;
+        }
+      }
+    }
+  }
+}

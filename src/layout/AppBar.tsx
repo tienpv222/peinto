@@ -9,6 +9,12 @@ export const AppBar = () => {
       <Tabs.Tab class={css.AppBtnErase} value="erase" title="Eraser" />
 
       <div class="flex-1" />
+
+      <a
+        title="Github"
+        href="https://github.com/tienpv222/peinto"
+        target="_blank"
+      />
     </Tabs.List>
   );
 };

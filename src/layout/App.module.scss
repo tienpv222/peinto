@@ -1,9 +1,5 @@
 .App {
-  --at-apply: w-screen h-screen relative flex bg-dark-1;
-
-  * {
-    --at-apply: select-none;
-  }
+  --at-apply: w-screen h-screen relative flex bg-neutral-7;
 
   > [role="separator"] {
     --at-apply: w-1 h-full absolute translate-x--50% cursor-col-resize
@@ -14,5 +10,22 @@
     &:focus-visible {
       --at-apply: bg-blue;
     }
+  }
+
+  /** GLOBALS */
+
+  * {
+    --at-apply: text-3.5 select-none;
+    font-family: "Helvetica";
+  }
+
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    appearance: textfield;
   }
 }

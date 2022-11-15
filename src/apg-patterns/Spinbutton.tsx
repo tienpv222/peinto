@@ -26,35 +26,35 @@ const SpinContext = createContext<Context>();
 type Context = {
   value: Observable<number>;
   max: ObservableReadonly<Nullable<number>>;
+  controlled?: FunctionMaybe<Nullable<boolean>>;
 
   min?: FunctionMaybe<Nullable<number>>;
   step?: FunctionMaybe<Nullable<number>>;
   round?: FunctionMaybe<Nullable<number>>;
-  controlled?: FunctionMaybe<Nullable<boolean>>;
   onChange?: Nullable<(value: number) => void>;
 };
 
-export type ButtonProps<T> = PolyProps<
-  T,
-  Omit<Context, "value">,
-  {
-    label: FunctionMaybe<string>;
-    value: FunctionMaybe<number>;
-    max?: FunctionMaybe<Nullable<number>>;
-  }
->;
+export namespace Spin {
+  export type ButtonProps<T = "div"> = PolyProps<
+    T,
+    Context,
+    {
+      label: FunctionMaybe<string>;
+      value: FunctionMaybe<number>;
+      max?: FunctionMaybe<Nullable<number>>;
+    }
+  >;
 
-export type TextProps<T> = PolyProps<T>;
-
-export type IncrementProps<T> = PolyProps<T>;
-
-export type DecrementProps<T> = PolyProps<T>;
+  export type TextProps<T = "input"> = PolyProps<T>;
+  export type IncrementProps<T = "button"> = PolyProps<T>;
+  export type DecrementProps<T = "button"> = PolyProps<T>;
+}
 
 /** METHODS */
 
 const setValue = (ctx: Context, value: number, skip?: unknown) => {
   value = Math.max(value, $$(ctx.min) ?? -Infinity);
-  value = Math.min(value, $$(ctx.max) ?? Infinity);
+  value = Math.min(value, ctx.max() ?? Infinity);
   value = Number(value.toFixed($$(ctx.round) ?? ROUND));
 
   skip || ctx.value(value);
@@ -77,7 +77,9 @@ const moveValue = (ctx: Context, stepMultiplier: number) => {
 
 /** COMPONENTS */
 
-export const Button = <T extends Component = "div">(props: ButtonProps<T>) => {
+export const Button = <T extends Component = "div">(
+  props: Spin.ButtonProps<T>
+) => {
   const {
     as,
     label,
@@ -92,18 +94,17 @@ export const Button = <T extends Component = "div">(props: ButtonProps<T>) => {
   } = props;
 
   const ctx: Context = {
-    ...(isFunction(value) && { controlled: true }),
+    min,
     step,
     round,
-    controlled,
     onChange,
 
     value: $(0),
-    min,
     max: useMemo(() => {
       const $$max = $$(max);
       return isNumber($$max) ? Math.max($$max, $$(min) ?? -Infinity) : $$max;
     }),
+    controlled: controlled ?? isFunction(value),
   };
 
   let init = true;
@@ -119,38 +120,24 @@ export const Button = <T extends Component = "div">(props: ButtonProps<T>) => {
     children: h(as ?? "div", {
       ...rest,
 
-      tabIndex: 0,
       role: "spinbutton",
       "aria-valuenow": ctx.value,
       "aria-valuemin": ctx.min,
       "aria-valuemax": ctx.max,
       ...ariaLabel(label),
-
-      onKeyDown({ key, target }: KeyboardEvent) {
-        assumeType<HTMLElement>(target);
-
-        const stepMultiplier = {
-          ArrowUp: 1,
-          ArrowDown: -1,
-          PageUp: Infinity,
-          PageDown: -Infinity,
-        }[key];
-
-        if (!stepMultiplier) return;
-        moveValue(ctx, stepMultiplier);
-      },
     }),
   });
 };
 
-export const Text = <T extends Component = "input">(props: TextProps<T>) => {
+export const Text = <T extends Component = "input">(
+  props: Spin.TextProps<T>
+) => {
   const ctx = useContext(SpinContext)!;
   const { as, ...rest } = props;
 
   return h(as ?? "input", {
     ...rest,
 
-    tabIndex: -1,
     type: "number",
     value: ctx.value,
 
@@ -160,7 +147,19 @@ export const Text = <T extends Component = "input">(props: TextProps<T>) => {
     },
 
     onKeyDown(event: KeyboardEvent) {
-      if (!["ArrowUp", "ArrowDown"].includes(event.key)) return;
+      const { key, target } = event;
+      assumeType<HTMLElement>(target);
+
+      const stepMultiplier = {
+        ArrowUp: 1,
+        ArrowDown: -1,
+        PageUp: Infinity,
+        PageDown: -Infinity,
+      }[key];
+
+      if (!stepMultiplier) return;
+
+      moveValue(ctx, stepMultiplier);
       event.preventDefault();
     },
 
@@ -169,7 +168,7 @@ export const Text = <T extends Component = "input">(props: TextProps<T>) => {
 };
 
 export const Decrement = <T extends Component = "button">(
-  props: DecrementProps<T>
+  props: Spin.DecrementProps<T>
 ) => {
   const ctx = useContext(SpinContext)!;
   const { as, ...rest } = props;
@@ -184,7 +183,7 @@ export const Decrement = <T extends Component = "button">(
 };
 
 export const Increment = <T extends Component = "button">(
-  props: IncrementProps<T>
+  props: Spin.IncrementProps<T>
 ) => {
   const ctx = useContext(SpinContext)!;
   const { as, ...rest } = props;

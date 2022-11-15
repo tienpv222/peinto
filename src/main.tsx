@@ -3,9 +3,11 @@ import "uno.css";
 import { render } from "voby";
 import { App } from "./layout/App";
 
-export const renderApp = () => {
-  return render(App, document.body);
-};
+/** METHODS */
+
+export const renderApp = () => render(App, document.body);
+
+/** HMR */
 
 if (import.meta.hot) {
   const { data } = import.meta.hot;

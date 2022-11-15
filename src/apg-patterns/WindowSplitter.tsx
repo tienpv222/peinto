@@ -20,7 +20,7 @@ import { ariaLabel } from "/src/utils/wai-aria";
 
 export const CSS_VAR_VALUE = "--value";
 
-const ROUNDING = 2;
+const ROUND = 2;
 const MIN = 0;
 const MAX = 100;
 const FALLBACK = 50;
@@ -38,10 +38,10 @@ type Context = {
   max: ObservableReadonly<number>;
   windowRect: Observable<[number, number]>;
   windowSize: Observable<number>;
+  controlled?: FunctionMaybe<Nullable<boolean>>;
 
   label: FunctionMaybe<string>;
   vertical?: FunctionMaybe<Nullable<boolean>>;
-  controlled?: FunctionMaybe<Nullable<boolean>>;
   onChange?: Nullable<(value: number) => void>;
 };
 
@@ -96,13 +96,13 @@ const getLimit = (
   value = Math.max(value, min);
   value = Math.min(value, max);
 
-  return Number(value.toFixed(ROUNDING));
+  return Number(value.toFixed(ROUND));
 };
 
 const setValue = (ctx: Context, value: number, skip?: unknown) => {
   value = Math.max(value, ctx.min());
   value = Math.min(value, ctx.max());
-  value = Number(value.toFixed(ROUNDING));
+  value = Number(value.toFixed(ROUND));
 
   skip || ctx.value(value);
   return value;
@@ -129,15 +129,14 @@ const Window = <T extends Component = "div">(props: WindowProps<T>) => {
   } = props;
 
   const ctx: Context = {
-    ...(isFunction(value) && { controlled: true }),
     label,
     vertical,
-    controlled,
     onChange,
 
     id: createId(),
     value: $(FALLBACK),
     windowRect: $([0, 0]),
+    controlled: controlled ?? isFunction(value),
   } as any;
 
   ctx.windowSize = useMemo(() => ctx.windowRect()[getCoord(ctx)]);

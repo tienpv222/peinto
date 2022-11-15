@@ -114,7 +114,7 @@ describe("Spinbutton", () => {
   ])("Keydown [%s]", async (key, expected) => {
     min(-10);
     max(10);
-    button.focus();
+    text.focus();
 
     await userEvent.keyboard(key);
     expect(value()).toBe(expected);
