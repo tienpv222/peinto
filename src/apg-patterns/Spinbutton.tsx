@@ -10,14 +10,16 @@ import {
   useEffect,
   useMemo,
 } from "voby";
-import { assumeType, isFunction, isNumber, Nullable } from "/src/utils/common";
+import { assumeType, isNumber, Nullable } from "/src/utils/common";
 import { Component, PolyProps } from "/src/utils/voby";
 import { ariaLabel } from "/src/utils/wai-aria";
 
 /** VARS */
 
+const MIN = -Number.MAX_VALUE;
+const MAX = Number.MAX_VALUE;
 const STEP = 1;
-const ROUND = 2;
+const ROUND = 0;
 
 const SpinContext = createContext<Context>();
 
@@ -26,59 +28,48 @@ const SpinContext = createContext<Context>();
 type Context = {
   value: Observable<number>;
   max: ObservableReadonly<Nullable<number>>;
-  controlled?: FunctionMaybe<Nullable<boolean>>;
 
   min?: FunctionMaybe<Nullable<number>>;
   step?: FunctionMaybe<Nullable<number>>;
   round?: FunctionMaybe<Nullable<number>>;
+  controlled?: FunctionMaybe<Nullable<boolean>>;
   onChange?: Nullable<(value: number) => void>;
 };
 
-export namespace Spin {
-  export type ButtonProps<T = "div"> = PolyProps<
-    T,
-    Context,
-    {
-      label: FunctionMaybe<string>;
-      value: FunctionMaybe<number>;
-      max?: FunctionMaybe<Nullable<number>>;
-    }
-  >;
+export type SpinButtonProps<T = "div"> = PolyProps<
+  T,
+  Context,
+  {
+    label: FunctionMaybe<string>;
+    value: FunctionMaybe<number>;
+    max?: FunctionMaybe<Nullable<number>>;
+    controlled?: FunctionMaybe<Nullable<boolean>>;
+  }
+>;
 
-  export type TextProps<T = "input"> = PolyProps<T>;
-  export type IncrementProps<T = "button"> = PolyProps<T>;
-  export type DecrementProps<T = "button"> = PolyProps<T>;
-}
+export type SpinTextProps<T = "input"> = PolyProps<T>;
+export type SpinIncrementProps<T = "button"> = PolyProps<T>;
+export type SpinDecrementProps<T = "button"> = PolyProps<T>;
 
 /** METHODS */
 
-const setValue = (ctx: Context, value: number, skip?: unknown) => {
-  value = Math.max(value, $$(ctx.min) ?? -Infinity);
-  value = Math.min(value, ctx.max() ?? Infinity);
+const setValue = (ctx: Context, value: number, controlled?: boolean) => {
+  value = Math.max(value, $$(ctx.min) ?? MIN);
+  value = Math.min(value, ctx.max() ?? MAX);
   value = Number(value.toFixed($$(ctx.round) ?? ROUND));
 
-  skip || ctx.value(value);
-  return value;
-};
-
-const updateValue = (ctx: Context, value: number) => {
-  value = setValue(ctx, value, $$(ctx.controlled));
+  $$(controlled ?? ctx.controlled) || ctx.value(value);
   ctx.onChange?.(value);
 };
 
 const moveValue = (ctx: Context, stepMultiplier: number) => {
-  const value = setValue(
-    ctx,
-    ctx.value() + ($$(ctx.step) ?? STEP) * stepMultiplier,
-    $$(ctx.controlled)
-  );
-  ctx.onChange?.(value);
+  setValue(ctx, ctx.value() + ($$(ctx.step) ?? STEP) * stepMultiplier);
 };
 
 /** COMPONENTS */
 
-export const Button = <T extends Component = "div">(
-  props: Spin.ButtonProps<T>
+export const SpinButton = <T extends Component = "div">(
+  props: SpinButtonProps<T>
 ) => {
   const {
     as,
@@ -98,13 +89,13 @@ export const Button = <T extends Component = "div">(
     step,
     round,
     onChange,
+    controlled,
 
     value: $(0),
     max: useMemo(() => {
       const $$max = $$(max);
-      return isNumber($$max) ? Math.max($$max, $$(min) ?? -Infinity) : $$max;
+      return isNumber($$max) ? Math.max($$max, $$(min) ?? MIN) : $$max;
     }),
-    controlled: controlled ?? isFunction(value),
   };
 
   let init = true;
@@ -112,14 +103,13 @@ export const Button = <T extends Component = "div">(
     if (!init && !$$(ctx.controlled)) return;
 
     init = false;
-    setValue(ctx, $$(value));
+    setValue(ctx, $$(value), false);
   });
 
   return h(SpinContext.Provider, {
     value: ctx,
     children: h(as ?? "div", {
       ...rest,
-
       role: "spinbutton",
       "aria-valuenow": ctx.value,
       "aria-valuemin": ctx.min,
@@ -129,8 +119,8 @@ export const Button = <T extends Component = "div">(
   });
 };
 
-export const Text = <T extends Component = "input">(
-  props: Spin.TextProps<T>
+export const SpinText = <T extends Component = "input">(
+  props: SpinTextProps<T>
 ) => {
   const ctx = useContext(SpinContext)!;
   const { as, ...rest } = props;
@@ -143,12 +133,17 @@ export const Text = <T extends Component = "input">(
 
     onChange({ target }: InputEvent) {
       assumeType<HTMLInputElement>(target);
-      updateValue(ctx, Number(target.value));
+      setValue(ctx, Number(target.value));
     },
 
     onKeyDown(event: KeyboardEvent) {
       const { key, target } = event;
       assumeType<HTMLElement>(target);
+
+      if (key === "Enter") {
+        target.blur();
+        return;
+      }
 
       const stepMultiplier = {
         ArrowUp: 1,
@@ -167,8 +162,8 @@ export const Text = <T extends Component = "input">(
   });
 };
 
-export const Decrement = <T extends Component = "button">(
-  props: Spin.DecrementProps<T>
+export const SpinDecrement = <T extends Component = "button">(
+  props: SpinDecrementProps<T>
 ) => {
   const ctx = useContext(SpinContext)!;
   const { as, ...rest } = props;
@@ -182,8 +177,8 @@ export const Decrement = <T extends Component = "button">(
   });
 };
 
-export const Increment = <T extends Component = "button">(
-  props: Spin.IncrementProps<T>
+export const SpinIncrement = <T extends Component = "button">(
+  props: SpinIncrementProps<T>
 ) => {
   const ctx = useContext(SpinContext)!;
   const { as, ...rest } = props;
@@ -196,12 +191,3 @@ export const Increment = <T extends Component = "button">(
     },
   });
 };
-
-/** RE-EXPORTS */
-
-export const Spin = {
-  Button,
-  Text,
-  Increment,
-  Decrement,
-} as const;

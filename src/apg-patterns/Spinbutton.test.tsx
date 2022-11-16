@@ -2,7 +2,12 @@ import { fireEvent } from "@testing-library/dom";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test } from "vitest";
 import { $, batch, render } from "voby";
-import { Spin } from "./Spinbutton";
+import {
+  SpinButton,
+  SpinDecrement,
+  SpinIncrement,
+  SpinText,
+} from "./Spinbutton";
 
 describe("Spinbutton", () => {
   const label = $("");
@@ -14,7 +19,7 @@ describe("Spinbutton", () => {
   const controlled = $(true);
 
   render(
-    <Spin.Button
+    <SpinButton
       label={label}
       value={value}
       min={min}
@@ -24,11 +29,11 @@ describe("Spinbutton", () => {
       controlled={controlled}
       onChange={value}
     >
-      <Spin.Text />
+      <SpinText />
 
-      <Spin.Decrement />
-      <Spin.Increment />
-    </Spin.Button>,
+      <SpinDecrement />
+      <SpinIncrement />
+    </SpinButton>,
     document.body
   );
 
@@ -90,8 +95,9 @@ describe("Spinbutton", () => {
 
   test.each([
     [null, null, -1, 0],
-    [0.5, null, -0.5, 0],
-    [1.5, 0, -2, -1],
+    [2, null, -2, 0],
+    [2.5, 2, -2.5, 0],
+    [2.5, null, -3, -1],
   ])(
     "Control click [step=%s] [round=%s]",
     async (stepVal, roundVal, decreased, increased) => {

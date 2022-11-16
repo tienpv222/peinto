@@ -1,7 +1,12 @@
 import { DragGesture } from "@use-gesture/vanilla";
 import { $, useCleanup } from "voby";
 import css from "./NumberInput.module.scss";
-import { Spin } from "/src/apg-patterns/Spinbutton";
+import {
+  SpinButton,
+  SpinDecrement,
+  SpinIncrement,
+  SpinText,
+} from "/src/apg-patterns/Spinbutton";
 
 /** VARS */
 
@@ -15,39 +20,52 @@ export type NumberInputProps = {
   min?: number;
   max: number;
   unit?: string;
-  class?: string;
   onChange(value: number): void;
+};
+
+type DragMemo = {
+  initial: number;
+  total: number;
 };
 
 /** COMPONENTS */
 
 export const NumberInput = (props: NumberInputProps) => {
-  const { class: class_, unit, ...rest } = props;
-  const { value, min = 0, max, onChange } = rest;
-  const disabled = $(false);
+  const { min = 0, unit, ...rest } = props;
+  const unrounded = $(rest.value());
+  const dragging = $(false);
+  const range = props.max - min;
 
   return (
-    <label class={[css.NumberInput, class_]}>
+    <label class={css.NumberInput}>
       <span children={rest.label} />
 
-      <Spin.Button
+      <SpinButton
         {...rest}
         min={min}
-        round={0}
+        controlled
         style={{
-          [DATA_VALUE]: () => `${(value() / (max - min)) * 100}%`,
+          [DATA_VALUE]: () =>
+            `${((dragging() ? unrounded() : rest.value()) / range) * 100}%`,
         }}
       >
         <span
           ref={(el) => {
-            const gesture = new DragGesture(el, ({ first, last, delta }) => {
-              let newVal = value() + (delta[0] * (max - min)) / 100;
-              newVal = Math.max(newVal, min);
-              newVal = Math.min(newVal, max);
-              onChange(newVal);
+            const gesture = new DragGesture(el, (state) => {
+              const { first, last, movement } = state;
+              const memo: DragMemo = state.memo ?? {
+                total: el.parentElement!.offsetWidth / range,
+                initial: rest.value(),
+              };
 
-              if (first) disabled(true);
-              if (last) setTimeout(disabled, 0, false);
+              let newVal = memo.initial + movement[0] / memo.total;
+              unrounded(newVal);
+              rest.onChange(newVal);
+
+              if (first) dragging(true);
+              if (last) setTimeout(dragging, 0, false);
+
+              return memo;
             });
 
             useCleanup(() => gesture.destroy());
@@ -55,13 +73,13 @@ export const NumberInput = (props: NumberInputProps) => {
           children={unit ?? "\u00A0"}
         />
 
-        <Spin.Text disabled={disabled} />
+        <SpinText disabled={dragging} />
 
         <div>
-          <Spin.Increment />
-          <Spin.Decrement />
+          <SpinIncrement />
+          <SpinDecrement />
         </div>
-      </Spin.Button>
+      </SpinButton>
     </label>
   );
 };
