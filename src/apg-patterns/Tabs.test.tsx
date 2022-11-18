@@ -1,7 +1,7 @@
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test } from "vitest";
 import { $, batch, render } from "voby";
-import { Tabs } from "./Tabs";
+import { Tab, TabList, TabPanel, TabProvider } from "./Tabs";
 
 describe("Tabs", () => {
   const label = $("");
@@ -12,7 +12,7 @@ describe("Tabs", () => {
   const disableds = [$(false), $(false), $(false)];
 
   render(
-    <Tabs.Provider
+    <TabProvider
       label={label}
       value={value}
       vertical={vertical}
@@ -20,16 +20,16 @@ describe("Tabs", () => {
       controlled={controlled}
       onChange={value}
     >
-      <Tabs.List>
-        <Tabs.Tab value="0" disabled={disableds[0]} />
-        <Tabs.Tab value="1" disabled={disableds[1]} />
-        <Tabs.Tab value="2" disabled={disableds[2]} />
-      </Tabs.List>
+      <TabList>
+        <Tab value="0" disabled={disableds[0]} />
+        <Tab value="1" disabled={disableds[1]} />
+        <Tab value="2" disabled={disableds[2]} />
+      </TabList>
 
-      <Tabs.Panel value="0" children="0" />
-      <Tabs.Panel value="1" children="1" />
-      <Tabs.Panel value="2" children="2" />
-    </Tabs.Provider>,
+      <TabPanel value="0" children="0" />
+      <TabPanel value="1" children="1" />
+      <TabPanel value="2" children="2" />
+    </TabProvider>,
     document.body
   );
 

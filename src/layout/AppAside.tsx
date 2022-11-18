@@ -2,7 +2,7 @@ import { $ } from "voby";
 import css from "./AppAside.module.scss";
 import { appAsideSplitter, appTool } from "./AppAside.state";
 import { AppBar } from "./AppBar";
-import { Tabs } from "/src/apg-patterns/Tabs";
+import { TabPanel, TabProvider } from "/src/apg-patterns/Tabs";
 import {
   SplitPrimaryPane,
   SplitSecondaryPane,
@@ -17,12 +17,7 @@ export const AppAside = () => {
 
   return (
     <SplitPrimaryPane as="aside" class={css.AppAside}>
-      <Tabs.Provider
-        label="App Tabs"
-        value={appTool}
-        vertical
-        onChange={appTool}
-      >
+      <TabProvider label="App Tabs" value={appTool} vertical onChange={appTool}>
         <AppBar />
 
         <SplitWindow
@@ -38,7 +33,7 @@ export const AppAside = () => {
           <Splitter />
 
           <SplitSecondaryPane>
-            <Tabs.Panel value="select">
+            <TabPanel value="select">
               <NumberInput
                 label="width"
                 value={w}
@@ -47,14 +42,14 @@ export const AppAside = () => {
                 onChange={w}
               />
               <NumberInput label="height" value={h} max={1024} onChange={h} />
-            </Tabs.Panel>
+            </TabPanel>
 
-            <Tabs.Panel value="draw">DrawPanel</Tabs.Panel>
+            <TabPanel value="draw">DrawPanel</TabPanel>
 
-            <Tabs.Panel value="erase">ErasePanel</Tabs.Panel>
+            <TabPanel value="erase">ErasePanel</TabPanel>
           </SplitSecondaryPane>
         </SplitWindow>
-      </Tabs.Provider>
+      </TabProvider>
     </SplitPrimaryPane>
   );
 };

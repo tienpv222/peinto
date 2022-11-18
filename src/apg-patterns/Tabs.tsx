@@ -36,12 +36,12 @@ type Context = {
   onChange?: Nullable<(value: string) => void>;
 };
 
-export type ProviderProps = {
+export type TabProviderProps = {
   value: FunctionMaybe<string>;
   children?: JSX.Element;
 } & Omit<Context, "id" | "selecteds" | "hasheds">;
 
-export type ListProps<T> = PolyProps<T>;
+export type TabListProps<T> = PolyProps<T>;
 
 export type TabProps<T> = PolyProps<
   T,
@@ -51,7 +51,7 @@ export type TabProps<T> = PolyProps<
   }
 >;
 
-export type PanelProps<T> = PolyProps<T, { value: FunctionMaybe<string> }>;
+export type TabPanelProps<T> = PolyProps<T, { value: FunctionMaybe<string> }>;
 
 /** METHODS */
 
@@ -80,7 +80,7 @@ const setValue = (
 
 /** COMPONENTS */
 
-const Provider = (props: ProviderProps) => {
+export const TabProvider = (props: TabProviderProps) => {
   const { value, children, ...rest } = props;
 
   const ctx: Context = {
@@ -102,7 +102,7 @@ const Provider = (props: ProviderProps) => {
   return h(TabsContext.Provider, { value: ctx, children });
 };
 
-const List = <T extends Component = "ul">(props: ListProps<T>) => {
+export const TabList = <T extends Component = "ul">(props: TabListProps<T>) => {
   const ctx = useContext(TabsContext)!;
   const { as, ...rest } = props;
 
@@ -116,7 +116,7 @@ const List = <T extends Component = "ul">(props: ListProps<T>) => {
   });
 };
 
-const Tab = <T extends Component = "li">(props: TabProps<T>) => {
+export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
   const ctx = useContext(TabsContext)!;
   const { as, value, disabled, ...rest } = props;
 
@@ -184,8 +184,8 @@ const Tab = <T extends Component = "li">(props: TabProps<T>) => {
   });
 };
 
-export const Panel = <T extends Component = "section">(
-  props: PanelProps<T>
+export const TabPanel = <T extends Component = "section">(
+  props: TabPanelProps<T>
 ) => {
   const ctx = useContext(TabsContext)!;
   const { as, value, children, ...rest } = props;
@@ -204,12 +204,3 @@ export const Panel = <T extends Component = "section">(
     }),
   });
 };
-
-/** RE-EXPORTS */
-
-export const Tabs = {
-  Provider,
-  List,
-  Tab,
-  Panel,
-} as const;
