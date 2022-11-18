@@ -1,18 +1,35 @@
 .App {
-  --at-apply: w-screen h-screen relative flex bg-dark-1;
+  --app-aside-width: clamp(300px, var(--value), 350px);
+  --at-apply: w-screen h-screen relative flex flex-row-reverse bg-neutral-9;
 
-  * {
-    --at-apply: select-none;
+  > section:last-child {
+    --at-apply: flex-1;
   }
 
   > [role="separator"] {
-    --at-apply: w-1 h-full absolute translate-x--50% cursor-col-resize
-      touch-none;
-    left: var(--value);
+    --at-apply: w-1 h-full absolute translate-x-50% cursor-col-resize touch-none;
+    right: var(--app-aside-width);
 
     &:active,
     &:focus-visible {
       --at-apply: bg-blue;
     }
+  }
+
+  /** GLOBALS */
+
+  * {
+    --at-apply: text-3.5 select-none;
+    font-family: "Helvetica";
+  }
+
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    appearance: textfield;
   }
 }

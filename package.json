@@ -24,6 +24,7 @@
     "endOfLine": "auto"
   },
   "dependencies": {
+    "@fontsource/roboto": "^4.5.8",
     "@use-gesture/vanilla": "^10.2.22",
     "base-x": "^4.0.0",
     "murmur-32": "^1.0.0",

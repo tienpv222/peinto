@@ -1,54 +1,58 @@
 .AppBtnSelect {
   &::before {
-    --at-apply: icon-cursor;
+    --at-apply: icon-cursor-20;
   }
 
   &[aria-selected="true"]::before {
-    --at-apply: icon-cursor-filled;
+    --at-apply: icon-cursor-20-filled;
   }
 }
 
 .AppBtnDraw {
   &::before {
-    --at-apply: icon-pen;
+    --at-apply: icon-pen-20;
   }
 
   &[aria-selected="true"]::before {
-    --at-apply: icon-pen-filled;
+    --at-apply: icon-pen-20-filled;
   }
 }
 
 .AppBtnErase {
   &::before {
-    --at-apply: icon-eraser;
+    --at-apply: icon-eraser-20;
   }
 
   &[aria-selected="true"]::before {
-    --at-apply: icon-eraser-filled;
+    --at-apply: icon-eraser-20-filled;
   }
 }
 
 .AppBar {
-  --at-apply: w-12 py-2 flex flex-col items-center;
+  --at-apply: w-11 py-2 flex flex-col items-center;
 
-  > [role="tab"] {
-    --at-apply: p-1.5 my-1 rounded;
+  > [role="tab"],
+  > a {
+    --at-apply: px-1.5 py-2 rounded border-2 border-transparent cursor-pointer;
 
     &:focus-visible {
-      --at-apply: outline outline-2 outline-blue;
-    }
-
-    &:hover::before {
-      --at-apply: bg-neutral-5;
-    }
-
-    &[aria-selected="true"]::before {
-      --at-apply: bg-blue;
+      --at-apply: border-blue;
     }
 
     &::before {
-      --at-apply: w-5 h-5 block bg-neutral-6;
-      content: "";
+      --at-apply: block content-none text-neutral-5;
     }
+
+    &:hover::before {
+      --at-apply: text-neutral-4;
+    }
+  }
+
+  > [role="tab"][aria-selected="true"]::before {
+    --at-apply: text-blue;
+  }
+
+  > a::before {
+    --at-apply: icon-info-20;
   }
 }

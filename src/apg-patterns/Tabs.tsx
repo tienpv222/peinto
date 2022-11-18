@@ -11,7 +11,7 @@ import {
 import { assumeType, createId, isFunction, Nullable } from "/src/utils/common";
 import { hashString } from "/src/utils/hash";
 import { Component, joinRefs, PolyProps } from "/src/utils/voby";
-import { ariaLabel, ariaOrientation } from "/src/utils/wai-aria";
+import { ariaDisabled, ariaLabel, ariaOrientation } from "/src/utils/wai-aria";
 
 /** VARS */
 
@@ -23,7 +23,7 @@ const tabValues = new WeakMap<HTMLElement, FunctionMaybe<string>>();
 
 /** TYPES */
 
-type Context = Readonly<{
+type Context = {
   id: string;
   selecteds: Partial<Record<string, true>>;
   hasheds: Partial<Record<string, string>>;
@@ -33,10 +33,10 @@ type Context = Readonly<{
   manualActivate?: FunctionMaybe<Nullable<boolean>>;
   controlled?: FunctionMaybe<Nullable<boolean>>;
   onChange?: Nullable<(value: string) => void>;
-}>;
+};
 
 export type ProviderProps = {
-  value?: FunctionMaybe<Nullable<string>>;
+  value: FunctionMaybe<string>;
   children?: JSX.Element;
 } & Omit<Context, "id" | "selecteds" | "hasheds">;
 
@@ -64,15 +64,14 @@ const getIds = ({ id, hasheds }: Context, value: FunctionMaybe<string>) => {
   };
 };
 
-const setValue = (ctx: Context, value: string) => {
-  store.reconcile(ctx.selecteds, { [value]: true });
-};
-
-const selectTab = (ctx: Context, value: FunctionMaybe<string>) => {
-  const $$value = $$(value);
-
-  $$(ctx.controlled) || setValue(ctx, $$value);
-  ctx.onChange?.($$value);
+const setValue = (
+  ctx: Context,
+  value: FunctionMaybe<string>,
+  controlled = ctx.controlled
+) => {
+  value = $$(value);
+  $$(controlled) || store.reconcile(ctx.selecteds, { [value]: true });
+  ctx.onChange?.(value);
 };
 
 /** COMPONENTS */
@@ -93,7 +92,7 @@ const Provider = (props: ProviderProps) => {
     if (!init && !$$(ctx.controlled)) return;
 
     init = false;
-    setValue(ctx, $$(value) ?? "");
+    setValue(ctx, value, false);
   });
 
   return h(TabsContext.Provider, { value: ctx, children });
@@ -101,7 +100,7 @@ const Provider = (props: ProviderProps) => {
 
 const List = <T extends Component = "ul">(props: ListProps<T>) => {
   const ctx = useContext(TabsContext)!;
-  const { as, children, ...rest } = props;
+  const { as, ...rest } = props;
 
   return h(as ?? "ul", {
     ...rest,
@@ -110,14 +109,12 @@ const List = <T extends Component = "ul">(props: ListProps<T>) => {
     role: "tablist",
     ...ariaLabel(ctx.label),
     ...ariaOrientation(ctx.vertical),
-
-    children,
   });
 };
 
 const Tab = <T extends Component = "li">(props: TabProps<T>) => {
   const ctx = useContext(TabsContext)!;
-  const { as, value, disabled, children, ...rest } = props;
+  const { as, value, disabled, ...rest } = props;
 
   return h(as ?? "li", {
     ...rest,
@@ -136,17 +133,18 @@ const Tab = <T extends Component = "li">(props: TabProps<T>) => {
     role: "tab",
     "aria-controls": () => getIds(ctx, value).panelId,
     "aria-selected": () => String(!!ctx.selecteds[$$(value)]),
-    "aria-disabled": () => String(!!$$(disabled)),
+    ...ariaDisabled(disabled),
 
     onClick() {
-      selectTab(ctx, value);
+      if ($$(disabled)) return;
+      setValue(ctx, value);
     },
 
     onKeyDown({ key, target }: KeyboardEvent) {
       assumeType<HTMLElement>(target);
 
       if (key === " " || key === "Enter") {
-        selectTab(ctx, value);
+        setValue(ctx, value);
         return;
       }
 
@@ -174,13 +172,11 @@ const Tab = <T extends Component = "li">(props: TabProps<T>) => {
         tabEls[i].focus();
 
         if ($$(ctx.manualActivate)) return;
-        selectTab(ctx, tabValues.get(tabEls[i])!);
+        setValue(ctx, tabValues.get(tabEls[i])!);
 
         return;
       }
     },
-
-    children,
   });
 };
 
@@ -212,4 +208,4 @@ export const Tabs = {
   List,
   Tab,
   Panel,
-};
+} as const;

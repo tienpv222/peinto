@@ -3,6 +3,7 @@ lockfileVersion: 5.4
 specifiers:
   "@commitlint/cli": ^17.2.0
   "@commitlint/config-conventional": ^17.2.0
+  "@fontsource/roboto": ^4.5.8
   "@iconify-json/fluent": ^1.1.16
   "@testing-library/dom": ^8.19.0
   "@testing-library/user-event": ^14.4.3
@@ -25,6 +26,7 @@ specifiers:
   voby: ^0.43.7
 
 dependencies:
+  "@fontsource/roboto": 4.5.8
   "@use-gesture/vanilla": 10.2.22
   base-x: 4.0.0
   murmur-32: 1.0.0
@@ -365,6 +367,13 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@fontsource/roboto/4.5.8:
+    resolution:
+      {
+        integrity: sha512-CnD7zLItIzt86q4Sj3kZUiLcBk1dSk81qcqgMGaZe7SQ1P8hFNxhMl5AZthK1zrDM5m74VVhaOpuMGIL4gagaA==,
+      }
+    dev: false
 
   /@iconify-json/fluent/1.1.16:
     resolution:
