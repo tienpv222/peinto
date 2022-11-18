@@ -2,6 +2,7 @@ import { DragGesture } from "@use-gesture/vanilla";
 import {
   $,
   $$,
+  batch,
   createContext,
   FunctionMaybe,
   h,
@@ -72,8 +73,10 @@ const getPrimaryPaneId = (ctx: Context) => {
 const setValue = (ctx: Context, value: number, controlled = ctx.controlled) => {
   value = round(clamp(value, ctx.min, ctx.max), ROUND);
 
-  $$(controlled) || ctx.value(value);
-  ctx.onChange?.(value);
+  batch(() => {
+    $$(controlled) || ctx.value(value);
+    ctx.onChange?.(value);
+  });
 };
 
 /** COMPONENTS */

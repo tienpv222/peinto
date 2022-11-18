@@ -1,5 +1,5 @@
 import { DragGesture } from "@use-gesture/vanilla";
-import { $, useCleanup } from "voby";
+import { $, batch, useCleanup } from "voby";
 import css from "./NumberInput.module.scss";
 import {
   SpinButton,
@@ -59,11 +59,14 @@ export const NumberInput = (props: NumberInputProps) => {
               };
 
               const value = memo.initial + movement[0] / memo.total;
-              unrounded(value);
-              rest.onChange(value);
 
-              if (first) dragging(true);
-              if (last) setTimeout(dragging, 0, false);
+              batch(() => {
+                unrounded(value);
+                rest.onChange(value);
+
+                if (first) dragging(true);
+                if (last) setTimeout(dragging, 0, false);
+              });
 
               return memo;
             });

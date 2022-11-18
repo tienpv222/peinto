@@ -1,6 +1,7 @@
 import {
   $,
   $$,
+  batch,
   createContext,
   FunctionMaybe,
   h,
@@ -58,8 +59,10 @@ const setValue = (ctx: Context, value: number, controlled = ctx.controlled) => {
   value = Math.min(value, ctx.max() ?? MAX);
   value = round(value, $$(ctx.round) ?? ROUND);
 
-  $$(controlled) || ctx.value(value);
-  ctx.onChange?.(value);
+  batch(() => {
+    $$(controlled) || ctx.value(value);
+    ctx.onChange?.(value);
+  });
 };
 
 const moveValue = (ctx: Context, stepMultiplier: number) => {

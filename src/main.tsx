@@ -17,10 +17,10 @@ if (import.meta.hot) {
   }
 
   import.meta.hot.accept((newModule) => {
-    if (newModule) {
-      data.dispose();
-      data.dispose = newModule.renderApp();
-    }
+    if (!newModule) return;
+
+    data.dispose();
+    data.dispose = newModule.renderApp();
   });
 } else {
   renderApp();

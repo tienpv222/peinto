@@ -1,5 +1,6 @@
 import {
   $$,
+  batch,
   createContext,
   FunctionMaybe,
   h,
@@ -69,9 +70,12 @@ const setValue = (
   value: FunctionMaybe<string>,
   controlled = ctx.controlled
 ) => {
-  value = $$(value);
-  $$(controlled) || store.reconcile(ctx.selecteds, { [value]: true });
-  ctx.onChange?.(value);
+  batch(() => {
+    value = $$(value);
+
+    $$(controlled) || store.reconcile(ctx.selecteds, { [value]: true });
+    ctx.onChange?.(value);
+  });
 };
 
 /** COMPONENTS */
