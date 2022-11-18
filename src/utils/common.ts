@@ -1,3 +1,4 @@
+import { $$, FunctionMaybe } from "voby";
 import { hashNumber } from "./hash";
 
 /** TYPES */
@@ -32,6 +33,21 @@ export const isFunction = (value: unknown): value is Function => {
 
 export const isNullLike = (value: unknown): value is null | undefined => {
   return value === null || value === undefined;
+};
+
+export const round = (value: number, precision: number) => {
+  return Number(value.toFixed(precision));
+};
+
+export const clamp = (
+  value: FunctionMaybe<Nullable<number>>,
+  min?: FunctionMaybe<Nullable<number>>,
+  max?: FunctionMaybe<Nullable<number>>
+) => {
+  const min_ = $$(min) ?? -Infinity;
+  const max_ = $$(max) ?? Infinity;
+
+  return Math.min(Math.max($$(value) ?? min_, min_), max_);
 };
 
 export const createId = (() => {

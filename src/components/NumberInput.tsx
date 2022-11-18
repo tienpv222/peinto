@@ -58,9 +58,9 @@ export const NumberInput = (props: NumberInputProps) => {
                 initial: rest.value(),
               };
 
-              let newVal = memo.initial + movement[0] / memo.total;
-              unrounded(newVal);
-              rest.onChange(newVal);
+              const value = memo.initial + movement[0] / memo.total;
+              unrounded(value);
+              rest.onChange(value);
 
               if (first) dragging(true);
               if (last) setTimeout(dragging, 0, false);

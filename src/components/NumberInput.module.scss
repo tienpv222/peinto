@@ -1,21 +1,19 @@
 .NumberInput {
-  --at-apply: w-full px-5 flex justify-between items-center text-neutral-5;
+  --at-apply: flex flex-col text-neutral-5;
 
   > span {
-    --at-apply: cursor-pointer;
+    --at-apply: pb-1 cursor-pointer text-3 capitalize;
   }
 
   > [role="spinbutton"] {
     --bg-color: theme("colors.slate.7");
-    --at-apply: w-30 flex justify-end items-center;
+    --at-apply: flex justify-end items-center;
 
     background-image: linear-gradient(
       to right,
       var(--bg-color) var(--value),
       theme("colors.neutral.9") var(--value)
     );
-    // background-size: calc(100% - 4px);
-    // border-bottom: 1px solid theme("colors.neutral.6");
 
     &:has(> input:focus) {
       --at-apply: outline outline-2 outline-blue;
@@ -32,30 +30,30 @@
     }
 
     > span {
-      --at-apply: w-8 pl-2 cursor-ew-resize touch-none;
+      --at-apply: w-8 pl-1 cursor-ew-resize touch-none;
     }
 
     > input {
-      --at-apply: w-0 pr-0.5 flex-1 text-right text-neutral-2;
+      --at-apply: w-8 pr-1 flex-1 text-right text-neutral-2;
     }
 
     > div {
       --at-apply: flex flex-col;
 
       button {
-        --at-apply: px-1.5;
-        --at-apply: hover-text-neutral-3;
+        --at-apply: px-1;
+        --at-apply: hover-text-neutral-4;
 
         &::before {
           --at-apply: block content-none;
         }
 
         &:first-of-type::before {
-          --at-apply: mt-1px mb--3px icon-chevron-up-12;
+          --at-apply: mb--3px icon-chevron-up-12;
         }
 
         &:last-of-type:before {
-          --at-apply: mt--3px mb-1px icon-chevron-down-12;
+          --at-apply: mt--3px icon-chevron-down-12;
         }
 
         &:active::before {

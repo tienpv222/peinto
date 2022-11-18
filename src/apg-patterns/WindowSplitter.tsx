@@ -12,57 +12,53 @@ import {
   useEffect,
   useMemo,
 } from "voby";
-import { createId, isFunction, isNumber, Nullable } from "/src/utils/common";
+import { clamp, createId, Nullable, round } from "/src/utils/common";
 import { Component, joinRefs, joinStyles, PolyProps } from "/src/utils/voby";
 import { ariaLabel } from "/src/utils/wai-aria";
 
 /** VARS */
 
 export const CSS_VAR_VALUE = "--value";
+export const DATA_REVERSE = "data-reverse";
 
 const ROUND = 2;
 const MIN = 0;
 const MAX = 100;
-const FALLBACK = 50;
 
 const SplitContext = createContext<Context>();
 
 /** TYPES */
-
-export type PercentMaybe = number | `${number}%`;
 
 type Context = {
   id: string;
   value: Observable<number>;
   min: ObservableReadonly<number>;
   max: ObservableReadonly<number>;
-  windowRect: Observable<[number, number]>;
-  windowSize: Observable<number>;
-  controlled?: FunctionMaybe<Nullable<boolean>>;
 
   label: FunctionMaybe<string>;
   vertical?: FunctionMaybe<Nullable<boolean>>;
+  reverse?: FunctionMaybe<Nullable<boolean>>;
+  controlled?: FunctionMaybe<Nullable<boolean>>;
   onChange?: Nullable<(value: number) => void>;
 };
 
-export type WindowProps<T> = PolyProps<
+export type SplitWindowProps<T> = PolyProps<
   T,
-  Pick<Context, "label" | "vertical" | "controlled" | "onChange">,
+  Omit<Context, "id">,
   {
-    value?: FunctionMaybe<Nullable<number>>;
-    min?: FunctionMaybe<Nullable<PercentMaybe>>;
-    max?: FunctionMaybe<Nullable<PercentMaybe>>;
+    value: FunctionMaybe<number>;
+    min?: FunctionMaybe<Nullable<number>>;
+    max?: FunctionMaybe<Nullable<number>>;
   }
 >;
 
-export type PrimaryPaneProps<T> = PolyProps<T>;
-
-export type SecondaryPaneProps<T> = PolyProps<T>;
-
+export type SplitPrimaryPaneProps<T> = PolyProps<T>;
+export type SplitSecondaryPaneProps<T> = PolyProps<T>;
 export type SplitterProps<T> = PolyProps<T>;
 
 export type DragMemo = {
   coord: 0 | 1;
+  direction: -1 | 1;
   initial: number;
   total: number;
 };
@@ -73,49 +69,18 @@ const getPrimaryPaneId = (ctx: Context) => {
   return `_Split_PrimaryPane_${ctx.id}`;
 };
 
-const getCoord = (ctx: Context) => {
-  return $$(ctx.vertical) ? 1 : 0;
-};
+const setValue = (ctx: Context, value: number, controlled = ctx.controlled) => {
+  value = round(clamp(value, ctx.min, ctx.max), ROUND);
 
-const getLimit = (
-  ctx: Context,
-  limit: FunctionMaybe<Nullable<PercentMaybe>>,
-  fallback: number,
-  min: number,
-  max: number
-) => {
-  let value = $$(limit);
-
-  if (isNumber(value)) {
-    const total = ctx.windowSize();
-    value = total ? (value / total) * 100 : fallback;
-  } else {
-    value = value ? parseFloat(value) : fallback;
-  }
-
-  value = Math.max(value, min);
-  value = Math.min(value, max);
-
-  return Number(value.toFixed(ROUND));
-};
-
-const setValue = (ctx: Context, value: number, skip?: unknown) => {
-  value = Math.max(value, ctx.min());
-  value = Math.min(value, ctx.max());
-  value = Number(value.toFixed(ROUND));
-
-  skip || ctx.value(value);
-  return value;
-};
-
-const dragSplitter = (ctx: Context, value: number) => {
-  value = setValue(ctx, value, $$(ctx.controlled));
+  $$(controlled) || ctx.value(value);
   ctx.onChange?.(value);
 };
 
 /** COMPONENTS */
 
-const Window = <T extends Component = "div">(props: WindowProps<T>) => {
+export const SplitWindow = <T extends Component = "div">(
+  props: SplitWindowProps<T>
+) => {
   const {
     as,
     label,
@@ -123,6 +88,7 @@ const Window = <T extends Component = "div">(props: WindowProps<T>) => {
     min,
     max,
     vertical,
+    reverse,
     controlled,
     onChange,
     ...rest
@@ -131,24 +97,23 @@ const Window = <T extends Component = "div">(props: WindowProps<T>) => {
   const ctx: Context = {
     label,
     vertical,
+    reverse,
+    controlled,
     onChange,
 
     id: createId(),
-    value: $(FALLBACK),
-    windowRect: $([0, 0]),
-    controlled: controlled ?? isFunction(value),
+    value: $(0),
   } as any;
 
-  ctx.windowSize = useMemo(() => ctx.windowRect()[getCoord(ctx)]);
-  ctx.min = useMemo(() => getLimit(ctx, min, MIN, MIN, MAX));
-  ctx.max = useMemo(() => getLimit(ctx, max, MAX, ctx.min(), MAX));
+  ctx.min = useMemo(() => round(clamp(min, MIN, MAX), ROUND));
+  ctx.max = useMemo(() => round(clamp($$(max) ?? MAX, ctx.min, MAX), ROUND));
 
   let init = true;
   useEffect(() => {
     if (!init && !$$(ctx.controlled)) return;
 
     init = false;
-    setValue(ctx, $$(value) ?? FALLBACK);
+    setValue(ctx, $$(value), false);
   });
 
   return h(SplitContext.Provider, {
@@ -156,25 +121,16 @@ const Window = <T extends Component = "div">(props: WindowProps<T>) => {
 
     children: h(as ?? "div", {
       ...rest,
-
-      ref: joinRefs((el) => {
-        new ResizeObserver(([entry]) => {
-          const { width, height } = entry.contentRect;
-
-          ctx.windowRect([width, height]);
-          setValue(ctx, ctx.value());
-        }).observe(el);
-      }, rest.ref),
-
       style: joinStyles(rest.style, {
         [CSS_VAR_VALUE]: () => `${ctx.value()}%`,
       }),
+      [DATA_REVERSE]: () => $$(ctx.reverse),
     }),
   });
 };
 
-const PrimaryPane = <T extends Component = "section">(
-  props: PrimaryPaneProps<T>
+export const SplitPrimaryPane = <T extends Component = "section">(
+  props: SplitPrimaryPaneProps<T>
 ) => {
   const ctx = useContext(SplitContext)!;
   const { as, ...rest } = props;
@@ -185,15 +141,17 @@ const PrimaryPane = <T extends Component = "section">(
   });
 };
 
-const SecondaryPane = <T extends Component = "section">(
-  props: SecondaryPaneProps<T>
+export const SplitSecondaryPane = <T extends Component = "section">(
+  props: SplitSecondaryPaneProps<T>
 ) => {
   const { as, ...rest } = props;
 
   return h(as ?? "section", rest);
 };
 
-const Splitter = <T extends Component = "div">(props: SplitterProps<T>) => {
+export const Splitter = <T extends Component = "div">(
+  props: SplitterProps<T>
+) => {
   const ctx = useContext(SplitContext)!;
   const { as, ...rest } = props;
 
@@ -202,16 +160,23 @@ const Splitter = <T extends Component = "div">(props: SplitterProps<T>) => {
 
     ref: joinRefs((el) => {
       const gesture = new DragGesture(el, (state) => {
-        const memo: DragMemo = state.memo ?? {
-          coord: getCoord(ctx),
-          initial: ctx.value(),
-          total: ctx.windowSize(),
-        };
+        let memo: DragMemo = state.memo;
 
-        const { coord, initial, total } = memo;
-        const value = initial + (state.movement[coord] / total) * 100;
+        if (!memo) {
+          const coord = $$(ctx.vertical) ? 1 : 0;
+          const direction = $$(ctx.reverse) ? -1 : 1;
+          const size = coord ? "offsetHeight" : "offsetWidth";
+          const initial = (el.previousSibling as HTMLElement)[size];
+          const total = el.parentElement![size];
 
-        dragSplitter(ctx, value);
+          memo = { coord, direction, initial, total };
+        }
+
+        const { coord, direction, initial, total } = memo;
+        const move = state.movement[coord];
+        const value = ((initial + move * direction) / total) * 100;
+
+        setValue(ctx, value);
         return memo;
       });
 
@@ -229,12 +194,3 @@ const Splitter = <T extends Component = "div">(props: SplitterProps<T>) => {
     ...ariaLabel(ctx.label),
   });
 };
-
-/** RE-EXPORTS */
-
-export const Split = {
-  Window,
-  PrimaryPane,
-  SecondaryPane,
-  Splitter,
-} as const;

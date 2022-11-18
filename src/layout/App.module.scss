@@ -1,10 +1,14 @@
 .App {
-  --at-apply: w-screen h-screen relative flex bg-neutral-7;
+  --app-aside-width: clamp(300px, var(--value), 350px);
+  --at-apply: w-screen h-screen relative flex flex-row-reverse bg-neutral-9;
+
+  > section:last-child {
+    --at-apply: flex-1;
+  }
 
   > [role="separator"] {
-    --at-apply: w-1 h-full absolute translate-x--50% cursor-col-resize
-      touch-none;
-    left: var(--value);
+    --at-apply: w-1 h-full absolute translate-x-50% cursor-col-resize touch-none;
+    right: var(--app-aside-width);
 
     &:active,
     &:focus-visible {

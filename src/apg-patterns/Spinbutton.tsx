@@ -10,7 +10,7 @@ import {
   useEffect,
   useMemo,
 } from "voby";
-import { assumeType, isNumber, Nullable } from "/src/utils/common";
+import { assumeType, isNumber, Nullable, round } from "/src/utils/common";
 import { Component, PolyProps } from "/src/utils/voby";
 import { ariaLabel } from "/src/utils/wai-aria";
 
@@ -53,12 +53,12 @@ export type SpinDecrementProps<T = "button"> = PolyProps<T>;
 
 /** METHODS */
 
-const setValue = (ctx: Context, value: number, controlled?: boolean) => {
+const setValue = (ctx: Context, value: number, controlled = ctx.controlled) => {
   value = Math.max(value, $$(ctx.min) ?? MIN);
   value = Math.min(value, ctx.max() ?? MAX);
-  value = Number(value.toFixed($$(ctx.round) ?? ROUND));
+  value = round(value, $$(ctx.round) ?? ROUND);
 
-  $$(controlled ?? ctx.controlled) || ctx.value(value);
+  $$(controlled) || ctx.value(value);
   ctx.onChange?.(value);
 };
 

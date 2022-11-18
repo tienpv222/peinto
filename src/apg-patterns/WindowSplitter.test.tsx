@@ -1,24 +1,23 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { $, batch, render } from "voby";
-import { PercentMaybe, Split } from "./WindowSplitter";
+import {
+  SplitPrimaryPane,
+  SplitSecondaryPane,
+  Splitter,
+  SplitWindow,
+} from "./WindowSplitter";
 
 describe("WindowSplitter", () => {
-  ResizeObserver = class CustomObs extends ResizeObserver {
-    constructor(fn: any) {
-      super(fn);
-      fn([{ contentRect: { width: 200, height: 400 } }]);
-    }
-  };
-
   const label = $("");
-  const value = $<number>(50);
-  const min = $<PercentMaybe | null>(0);
-  const max = $<PercentMaybe | null>("100%");
-  const vertical = $(false);
+  const value = $(0);
+  const min = $<number>();
+  const max = $<number>();
+  const vertical = $<boolean>();
+  const reverse = $<boolean>();
   const controlled = $(true);
 
   render(
-    <Split.Window
+    <SplitWindow
       label={label}
       value={value}
       min={min}
@@ -26,12 +25,10 @@ describe("WindowSplitter", () => {
       vertical={vertical}
       controlled={controlled}
     >
-      <Split.PrimaryPane />
-
-      <Split.Splitter />
-
-      <Split.SecondaryPane />
-    </Split.Window>,
+      <SplitPrimaryPane />
+      <Splitter />
+      <SplitSecondaryPane />
+    </SplitWindow>,
     document.body
   );
 
@@ -42,10 +39,11 @@ describe("WindowSplitter", () => {
   beforeEach(() => {
     batch(() => {
       label("");
-      value(50);
-      min(0);
-      max("100%");
-      vertical(false);
+      value(0);
+      min(undefined);
+      max(undefined);
+      vertical(undefined);
+      reverse(undefined);
       controlled(true);
     });
   });
@@ -76,52 +74,39 @@ describe("WindowSplitter", () => {
   });
 
   test.each([
-    [null, ["0", "0"]],
-    ["-1%", ["0", "0"]],
-    ["1%", ["1", "1"]],
-    ["101%", ["100", "100"]],
-    [-1, ["0", "0"]],
-    [1, ["0.5", "0.25"]],
-    [401, ["100", "100"]],
-  ] as const)("Value min [%s]", (value, expecteds) => {
+    [-1, "0"],
+    [1, "1"],
+    [101, "100"],
+  ] as const)("Value min [%s]", (value, expected) => {
     min(value);
-    vertical(false);
-    expect(splitter.getAttribute("aria-valuemin")).toBe(expecteds[0]);
-
-    vertical(true);
-    expect(splitter.getAttribute("aria-valuemin")).toBe(expecteds[1]);
+    expect(splitter.getAttribute("aria-valuemin")).toBe(expected);
   });
 
   test.each([
-    [null, 0, ["100", "100"]],
-    ["-1%", 0, ["0", "0"]],
-    ["0%", "1%", ["1", "1"]],
-    ["1%", 0, ["1", "1"]],
-    ["101%", 0, ["100", "100"]],
-    [-1, 0, ["0", "0"]],
-    [0, 1, ["0.5", "0.25"]],
-    [1, 0, ["0.5", "0.25"]],
-    [401, 0, ["100", "100"]],
-  ] as const)("Value max [%s] [min=%s] ", (maxVal, minVal, expecteds) => {
-    min(minVal);
-    max(maxVal);
-    vertical(false);
-    expect(splitter.getAttribute("aria-valuemax")).toBe(expecteds[0]);
-
-    vertical(true);
-    expect(splitter.getAttribute("aria-valuemax")).toBe(expecteds[1]);
+    [undefined, 0, "100"],
+    [-1, 0, "0"],
+    [0, 1, "1"],
+    [1, 0, "1"],
+    [101, 0, "100"],
+  ] as const)("Value max [%s] [min=%s]", (max_, min_, expected) => {
+    min(min_);
+    max(max_);
+    expect(splitter.getAttribute("aria-valuemax")).toBe(expected);
   });
 
   test.each([
-    [-1, "1%", "100%", "1"],
-    [2, "1%", null, "2"],
-    [100, null, "99%", "99"],
-  ] as const)("Value [%s]", (val, minVal, maxVal, expected) => {
-    value(val);
-    min(minVal);
-    max(maxVal);
-    expect(splitter.getAttribute("aria-valuenow")).toBe(expected);
-  });
+    [-1, 1, 100, "1"],
+    [2, 1, undefined, "2"],
+    [100, undefined, 99, "99"],
+  ] as const)(
+    "Value [%s] [min=%s] [max=%s]",
+    (value_, min_, max_, expected) => {
+      value(value_);
+      min(min_);
+      max(max_);
+      expect(splitter.getAttribute("aria-valuenow")).toBe(expected);
+    }
+  );
 
   test.todo("Window resize");
 
