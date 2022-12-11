@@ -26,10 +26,10 @@
   "dependencies": {
     "@fontsource/roboto": "^4.5.8",
     "@use-gesture/vanilla": "^10.2.22",
-    "base-x": "^4.0.0",
-    "murmur-32": "^1.0.0",
+    "oby": "^12.5.3",
+    "ohash": "^1.0.0",
     "the-new-css-reset": "^1.7.3",
-    "voby": "^0.43.7"
+    "voby": "^0.43.9"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.2.0",

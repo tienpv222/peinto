@@ -8,7 +8,6 @@ describe("Tabs", () => {
   const value = $("");
   const vertical = $(false);
   const manualActivate = $(false);
-  const controlled = $(true);
   const disableds = [$(false), $(false), $(false)];
 
   render(
@@ -17,8 +16,6 @@ describe("Tabs", () => {
       value={value}
       vertical={vertical}
       manualActivate={manualActivate}
-      controlled={controlled}
-      onChange={value}
     >
       <TabList>
         <Tab value="0" disabled={disableds[0]} />
@@ -43,7 +40,6 @@ describe("Tabs", () => {
       value("");
       vertical(false);
       manualActivate(false);
-      controlled(true);
       disableds.forEach((set) => set(false));
     });
   });
@@ -141,18 +137,5 @@ describe("Tabs", () => {
 
     await userEvent.keyboard("{ArrowRight}");
     expect(activeEl).toBe(document.activeElement);
-  });
-
-  test("Uncontrolled", async () => {
-    controlled(false);
-    value(String(0));
-    expect(tabs[0].getAttribute("aria-selected")).not.toBe("true");
-
-    await userEvent.click(tabs[0]);
-    expect(tabs[0].getAttribute("aria-selected")).toBe("true");
-
-    await userEvent.click(tabs[1]);
-    expect(tabs[1].getAttribute("aria-selected")).toBe("true");
-    expect(value()).toBe("1");
   });
 });

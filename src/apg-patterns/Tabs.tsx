@@ -1,63 +1,74 @@
+import { SelectorFunction } from "oby/dist/types";
+import { hash } from "ohash";
 import {
   $$,
-  batch,
   createContext,
   FunctionMaybe,
   h,
   If,
-  store,
   useContext,
   useEffect,
+  useSelector,
 } from "voby";
-import { assumeType, createId, isFunction, Nullable } from "/src/utils/common";
-import { hashString } from "/src/utils/hash";
-import { Component, joinRefs, PolyProps } from "/src/utils/voby";
+import { assumeType, createId, JoinAfter, Nullable } from "/src/utils/common";
+import {
+  Component,
+  control,
+  Control,
+  ControlMaybe,
+  joinRefs,
+  PolyProps,
+} from "/src/utils/voby";
 import { ariaDisabled, ariaLabel, ariaOrientation } from "/src/utils/wai-aria";
 
 /** VARS */
 
-export const DATA_SELECTED = "data-selected";
+const DATA_SELECTED = "data-selected";
 
 const TabsContext = createContext<Context>();
 
-const tabValues = new WeakMap<HTMLElement, FunctionMaybe<string>>();
+const tabValues = new WeakMap<HTMLElement, string>();
 
 /** TYPES */
 
 type Context = {
   id: string;
-  selecteds: Partial<Record<string, true>>;
-  hasheds: Partial<Record<string, string>>;
+  value: Control<string>;
+  selector: SelectorFunction<string>;
 
   label: FunctionMaybe<string>;
   vertical?: FunctionMaybe<Nullable<boolean>>;
   manualActivate?: FunctionMaybe<Nullable<boolean>>;
-  controlled?: FunctionMaybe<Nullable<boolean>>;
-  onChange?: Nullable<(value: string) => void>;
 };
 
-export type TabProviderProps = {
-  value: FunctionMaybe<string>;
-  children?: JSX.Element;
-} & Omit<Context, "id" | "selecteds" | "hasheds">;
+export type TabProviderProps = JoinAfter<
+  Omit<Context, "id" | "value" | "selector">,
+  {
+    value: ControlMaybe<string>;
+    children?: JSX.Element;
+  }
+>;
 
 export type TabListProps<T> = PolyProps<T>;
 
 export type TabProps<T> = PolyProps<
   T,
   {
-    value: FunctionMaybe<string>;
+    value: string;
     disabled?: FunctionMaybe<Nullable<boolean>>;
   }
 >;
 
-export type TabPanelProps<T> = PolyProps<T, { value: FunctionMaybe<string> }>;
+export type TabPanelProps<T> = PolyProps<T, { value: string }>;
+
+export type TabPanelAs = Component<{
+  [DATA_SELECTED]: () => boolean;
+}>;
 
 /** METHODS */
 
-const getIds = ({ id, hasheds }: Context, value: FunctionMaybe<string>) => {
-  const value_ = $$(value);
-  const hashed = hasheds[value_] ?? (hasheds[value_] = hashString(value_));
+const getIds = ({ id }: Context, value: string) => {
+  const hashed = hash(value);
 
   return {
     tabId: `_Tab_${id}_${hashed}`,
@@ -65,39 +76,18 @@ const getIds = ({ id, hasheds }: Context, value: FunctionMaybe<string>) => {
   };
 };
 
-const setValue = (
-  ctx: Context,
-  value: FunctionMaybe<string>,
-  controlled = ctx.controlled
-) => {
-  batch(() => {
-    value = $$(value);
-
-    $$(controlled) || store.reconcile(ctx.selecteds, { [value]: true });
-    ctx.onChange?.(value);
-  });
-};
-
 /** COMPONENTS */
 
 export const TabProvider = (props: TabProviderProps) => {
   const { value, children, ...rest } = props;
+  const ctxValue = control(value);
 
   const ctx: Context = {
-    ...(isFunction(value) && { controlled: true }),
     ...rest,
     id: createId(),
-    selecteds: store({}),
-    hasheds: {},
+    value: ctxValue,
+    selector: useSelector(ctxValue),
   };
-
-  let init = true;
-  useEffect(() => {
-    if (!init && !$$(ctx.controlled)) return;
-
-    init = false;
-    setValue(ctx, value, false);
-  });
 
   return h(TabsContext.Provider, { value: ctx, children });
 };
@@ -120,6 +110,9 @@ export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
   const ctx = useContext(TabsContext)!;
   const { as, value, disabled, ...rest } = props;
 
+  const selected = ctx.selector(value);
+  const { tabId, panelId } = getIds(ctx, value);
+
   return h(as ?? "li", {
     ...rest,
 
@@ -131,24 +124,24 @@ export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
       });
     }, rest.ref),
 
-    id: () => getIds(ctx, value).tabId,
-    tabIndex: () => (ctx.selecteds[$$(value)] ? 0 : -1),
+    id: tabId,
+    tabIndex: () => (selected() ? 0 : -1),
 
     role: "tab",
-    "aria-controls": () => getIds(ctx, value).panelId,
-    "aria-selected": () => String(!!ctx.selecteds[$$(value)]),
+    "aria-controls": panelId,
+    "aria-selected": () => String(selected()),
     ...ariaDisabled(disabled),
 
     onClick() {
       if ($$(disabled)) return;
-      setValue(ctx, value);
+      ctx.value(value);
     },
 
     onKeyDown({ key, target }: KeyboardEvent) {
       assumeType<HTMLElement>(target);
 
       if (key === " " || key === "Enter") {
-        setValue(ctx, value);
+        ctx.value(value);
         return;
       }
 
@@ -176,7 +169,7 @@ export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
         tabEls[i].focus();
 
         if ($$(ctx.manualActivate)) return;
-        setValue(ctx, tabValues.get(tabEls[i])!);
+        ctx.value(tabValues.get(tabEls[i])!);
 
         return;
       }
@@ -184,22 +177,25 @@ export const Tab = <T extends Component = "li">(props: TabProps<T>) => {
   });
 };
 
-export const TabPanel = <T extends Component = "section">(
+export const TabPanel = <T extends TabPanelAs = "section">(
   props: TabPanelProps<T>
 ) => {
   const ctx = useContext(TabsContext)!;
   const { as, value, children, ...rest } = props;
 
+  const selected = ctx.selector(value);
+  const { tabId, panelId } = getIds(ctx, value);
+
   return h(as ?? "section", {
     ...rest,
-    id: () => getIds(ctx, value).panelId,
+    id: panelId,
 
     role: "tabpanel",
-    "aria-labelledby": () => getIds(ctx, value).tabId,
-    [DATA_SELECTED]: () => ctx.selecteds[$$(value)],
+    "aria-labelledby": tabId,
+    [DATA_SELECTED]: selected,
 
     children: h(If, {
-      when: () => ctx.selecteds[$$(value)],
+      when: selected,
       children,
     }),
   });

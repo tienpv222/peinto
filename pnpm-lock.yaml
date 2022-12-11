@@ -9,11 +9,11 @@ specifiers:
   "@testing-library/user-event": ^14.4.3
   "@use-gesture/vanilla": ^10.2.22
   "@vitest/ui": ^0.24.5
-  base-x: ^4.0.0
   happy-dom: ^7.6.6
   husky: ^8.0.1
   lint-staged: ^13.0.3
-  murmur-32: ^1.0.0
+  oby: ^12.5.3
+  ohash: ^1.0.0
   prettier: ^2.7.1
   prettier-plugin-organize-imports: ^3.1.1
   sass: ^1.56.0
@@ -23,15 +23,15 @@ specifiers:
   unocss: ^0.46.3
   vite: ^3.2.2
   vitest: ^0.24.5
-  voby: ^0.43.7
+  voby: ^0.43.9
 
 dependencies:
   "@fontsource/roboto": 4.5.8
   "@use-gesture/vanilla": 10.2.22
-  base-x: 4.0.0
-  murmur-32: 1.0.0
+  oby: 12.5.3
+  ohash: 1.0.0
   the-new-css-reset: 1.7.3
-  voby: 0.43.7
+  voby: 0.43.9
 
 devDependencies:
   "@commitlint/cli": 17.2.0
@@ -1121,13 +1121,6 @@ packages:
     engines: { node: ">= 0.4" }
     dev: true
 
-  /base-x/4.0.0:
-    resolution:
-      {
-        integrity: sha512-FuwxlW4H5kh37X/oW59pwTzzTKRzfrrQwhmyspRM7swOEZcHtDZSCt45U6oKgtuFE+WYPblePMVIPR4RZrh/hw==,
-      }
-    dev: false
-
   /binary-extensions/2.2.0:
     resolution:
       {
@@ -1722,14 +1715,6 @@ packages:
       }
     dev: true
 
-  /encode-utf8/2.0.0:
-    resolution:
-      {
-        integrity: sha512-3EyMFxZj1/7oMotElDQUEQcP7N4TIe1aJ0m1uBDoyQ8I2LBHhBsXx8P3KsPbqNlGzG+NYxFwEauUwMPHZg3YDQ==,
-      }
-    engines: { node: ^12.20.0 || ^14.13.1 || >=16.0.0 }
-    dev: false
-
   /error-ex/1.3.2:
     resolution:
       {
@@ -2193,14 +2178,6 @@ packages:
       locate-path: 6.0.0
       path-exists: 4.0.0
     dev: true
-
-  /fmix/1.0.0:
-    resolution:
-      {
-        integrity: sha512-PIaqOGvVH5P+R92Ywy5PumsNEHvondVQh42SGOmkA9A0ZTFbfguzZpjZ/Gy3WVRUqT9Ia8k5tWlJeiZQzRHA7g==,
-      }
-    engines: { node: ^12.20.0 || ^14.13.1 || >=16.0.0 }
-    dev: false
 
   /for-each/0.3.3:
     resolution:
@@ -3296,17 +3273,6 @@ packages:
       }
     dev: true
 
-  /murmur-32/1.0.0:
-    resolution:
-      {
-        integrity: sha512-l6QKUGWXzZWHash7lmZzycpIifOrnc3PeMaoFrMv90c+xqOyOSzJU0q2T/1d15MzAdEWTpCh1paC855APqt1Gw==,
-      }
-    engines: { node: ^12.20.0 || ^14.13.1 || >=16.0.0 }
-    dependencies:
-      encode-utf8: 2.0.0
-      fmix: 1.0.0
-    dev: false
-
   /nanoid/3.3.4:
     resolution:
       {
@@ -3430,10 +3396,17 @@ packages:
       object-keys: 1.1.1
     dev: true
 
-  /oby/12.4.6:
+  /oby/12.5.3:
     resolution:
       {
-        integrity: sha512-R96VWkcnT+DfFZfTXBX0BH91KaEEI0d/7QHrwXeoomV5k5AP8SvPoDDeb8cW2nAaMDZ64KhGtJSJZRXItd0FuA==,
+        integrity: sha512-LhnaJoGdrw6PrshXt793KzwhFxrgas/DfZgzGWea+9o76nrwFnvgqZZHgU8JEgjTsASoHLHTKpGVaPi45OSwPA==,
+      }
+    dev: false
+
+  /ohash/1.0.0:
+    resolution:
+      {
+        integrity: sha512-kxSyzq6tt+6EE/xCnD1XaFhCCjUNUaz3X30rJp6mnjGLXAAvuPFqohMdv0aScWzajR45C29HyBaXZ8jXBwnh9A==,
       }
     dev: false
 
@@ -4787,14 +4760,14 @@ packages:
       - terser
     dev: true
 
-  /voby/0.43.7:
+  /voby/0.43.9:
     resolution:
       {
-        integrity: sha512-ZHA3LpHi9NSgllJU9y3/FgO621iCt7CScdMI++MCdVGNWOI84YrJwU1duVHq65YoJ2BLaTCX5NhsLhvwWw23zg==,
+        integrity: sha512-SwZt7vpm97FIcAtklpqY+jczKPQcZyjG+EGe/1GUc4MFiSQFrcdcgajutxCIzAVg23ocH+ak0Ltskl++CG+uag==,
       }
     dependencies:
       htm: 3.1.1
-      oby: 12.4.6
+      oby: 12.5.3
     dev: false
 
   /webidl-conversions/3.0.1:

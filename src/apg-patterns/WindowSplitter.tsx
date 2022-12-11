@@ -1,20 +1,23 @@
 import { DragGesture } from "@use-gesture/vanilla";
 import {
-  $,
   $$,
-  batch,
   createContext,
   FunctionMaybe,
   h,
-  Observable,
-  ObservableReadonly,
   useCleanup,
   useContext,
-  useEffect,
-  useMemo,
 } from "voby";
 import { clamp, createId, Nullable, round } from "/src/utils/common";
-import { Component, joinRefs, joinStyles, PolyProps } from "/src/utils/voby";
+import {
+  Component,
+  Control,
+  control,
+  ControlMaybe,
+  joinRefs,
+  joinStyles,
+  PolyProps,
+  useTransform,
+} from "/src/utils/voby";
 import { ariaLabel } from "/src/utils/wai-aria";
 
 /** VARS */
@@ -32,24 +35,22 @@ const SplitContext = createContext<Context>();
 
 type Context = {
   id: string;
-  value: Observable<number>;
-  min: ObservableReadonly<number>;
-  max: ObservableReadonly<number>;
+  value: Control<number>;
+  min: Control<Nullable<number>>;
+  max: Control<Nullable<number>>;
 
   label: FunctionMaybe<string>;
   vertical?: FunctionMaybe<Nullable<boolean>>;
   reverse?: FunctionMaybe<Nullable<boolean>>;
-  controlled?: FunctionMaybe<Nullable<boolean>>;
-  onChange?: Nullable<(value: number) => void>;
 };
 
 export type SplitWindowProps<T> = PolyProps<
   T,
   Omit<Context, "id">,
   {
-    value: FunctionMaybe<number>;
-    min?: FunctionMaybe<Nullable<number>>;
-    max?: FunctionMaybe<Nullable<number>>;
+    value: ControlMaybe<number>;
+    min?: ControlMaybe<Nullable<number>>;
+    max?: ControlMaybe<Nullable<number>>;
   }
 >;
 
@@ -70,54 +71,38 @@ const getPrimaryPaneId = (ctx: Context) => {
   return `_Split_PrimaryPane_${ctx.id}`;
 };
 
-const setValue = (ctx: Context, value: number, controlled = ctx.controlled) => {
-  value = round(clamp(value, ctx.min, ctx.max), ROUND);
-
-  batch(() => {
-    $$(controlled) || ctx.value(value);
-    ctx.onChange?.(value);
-  });
-};
-
 /** COMPONENTS */
 
 export const SplitWindow = <T extends Component = "div">(
   props: SplitWindowProps<T>
 ) => {
-  const {
-    as,
-    label,
-    value,
-    min,
-    max,
-    vertical,
-    reverse,
-    controlled,
-    onChange,
-    ...rest
-  } = props;
+  const { as, label, value, min, max, vertical, reverse, ...rest } = props;
 
   const ctx: Context = {
     label,
     vertical,
     reverse,
-    controlled,
-    onChange,
 
     id: createId(),
-    value: $(0),
-  } as any;
+    value: control(value),
+    min: control(min),
+    max: control(max),
+  };
 
-  ctx.min = useMemo(() => round(clamp(min, MIN, MAX), ROUND));
-  ctx.max = useMemo(() => round(clamp($$(max) ?? MAX, ctx.min, MAX), ROUND));
+  useTransform(ctx.min, (value) => round(clamp(value, MIN, MAX), ROUND));
 
-  let init = true;
-  useEffect(() => {
-    if (!init && !$$(ctx.controlled)) return;
+  useTransform(
+    ctx.max,
+    (value, min) => round(clamp(value ?? MAX, min, MAX), ROUND),
+    ctx.min
+  );
 
-    init = false;
-    setValue(ctx, $$(value), false);
-  });
+  useTransform(
+    ctx.value,
+    (value, min, max) => round(clamp(value, min, max), ROUND),
+    ctx.min,
+    ctx.max
+  );
 
   return h(SplitContext.Provider, {
     value: ctx,
@@ -179,7 +164,7 @@ export const Splitter = <T extends Component = "div">(
         const move = state.movement[coord];
         const value = ((initial + move * direction) / total) * 100;
 
-        setValue(ctx, value);
+        ctx.value(value);
         return memo;
       });
 

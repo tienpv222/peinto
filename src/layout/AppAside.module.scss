@@ -15,15 +15,11 @@
     --at-apply: flex-1;
 
     > section {
-      --at-apply: pr-5 h-full flex gap-2 justify-center items-center
+      --at-apply: h-full pl-3 pr-5 flex flex-col justify-center gap-2
         text-neutral-3;
 
-      &:not([data-selected]) {
+      &:not([data-selected=""]) {
         --at-apply: hidden;
-      }
-
-      > * {
-        --at-apply: mx-1 flex-1;
       }
     }
   }

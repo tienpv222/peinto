@@ -1,5 +1,7 @@
-import { Component, ComponentFunction } from "voby/dist/types";
-import { JoinAfter, Nullable } from "./common";
+import { SYMBOL_OBSERVABLE, SYMBOL_OBSERVABLE_WRITABLE } from "oby";
+import { $, $$, useEffect, useResolved } from "voby";
+import { Component, ComponentFunction, FunctionMaybe } from "voby/dist/types";
+import { isFunction, JoinAfter, Nullable } from "./common";
 
 /** TYPES */
 
@@ -12,7 +14,7 @@ export type ComponentProps<T> = T extends keyof JSX.IntrinsicElements
   : {};
 
 export type PolyProps<T, P0 = {}, P1 = {}, P2 = {}> = JoinAfter<
-  ComponentProps<T>,
+  Partial<ComponentProps<T>>,
   P0,
   P1,
   P2,
@@ -24,7 +26,31 @@ export type PolyProps<T, P0 = {}, P1 = {}, P2 = {}> = JoinAfter<
   }>
 >;
 
+export type Control<T = unknown> = (value?: T) => T;
+export type ControlMaybe<T = unknown> = T | Control<T>;
+
+export type ResolvedFunctionMaybeArray<T> = T extends [
+  FunctionMaybe<infer U>,
+  ...infer V
+]
+  ? [U, ...ResolvedFunctionMaybeArray<V>]
+  : [];
+
+/** VARS */
+
+const SYMBOL_UNSET = Symbol();
+
 /** METHODS */
+
+export const control = <T>(value: ControlMaybe<T>): Control<T> => {
+  return !isFunction(value)
+    ? $(value)
+    : !value.length ||
+      !(SYMBOL_OBSERVABLE in value) ||
+      !(SYMBOL_OBSERVABLE_WRITABLE in value)
+    ? $($$(value))
+    : value;
+};
 
 export const joinRefs = (
   ref: JSX.Ref<HTMLElement>,
@@ -39,3 +65,26 @@ export const joinStyles = (
 ) => {
   return { ...style1, ...style2 };
 };
+
+/** HOOKS */
+
+export function useTransform<T, V extends FunctionMaybe[]>(
+  control: Control<T>,
+  transform: (value: T, ...deps: ResolvedFunctionMaybeArray<V>) => T,
+  ...dependencies: V
+) {
+  let valuePrev = SYMBOL_UNSET as T;
+  let depsPrev = [] as any;
+
+  useEffect(() => {
+    const value = control();
+    const deps = useResolved(dependencies);
+    const depsChanged = deps.some((v, i) => v !== depsPrev[i]);
+
+    if (value === valuePrev && !depsChanged) return;
+
+    depsPrev = deps;
+    valuePrev = transform(value, ...depsPrev);
+    control(valuePrev);
+  });
+}

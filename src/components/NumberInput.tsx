@@ -7,6 +7,7 @@ import {
   SpinIncrement,
   SpinText,
 } from "/src/apg-patterns/Spinbutton";
+import { Control } from "/src/utils/voby";
 
 /** VARS */
 
@@ -16,11 +17,10 @@ export const DATA_VALUE = "--value";
 
 export type NumberInputProps = {
   label: string;
-  value: () => number;
+  value: Control<number>;
   min?: number;
   max: number;
   unit?: string;
-  onChange(value: number): void;
 };
 
 type DragMemo = {
@@ -34,7 +34,7 @@ export const NumberInput = (props: NumberInputProps) => {
   const { min = 0, unit, ...rest } = props;
   const unrounded = $(rest.value());
   const dragging = $(false);
-  const range = props.max - min;
+  const range = rest.max - min;
 
   return (
     <label class={css.NumberInput}>
@@ -43,7 +43,6 @@ export const NumberInput = (props: NumberInputProps) => {
       <SpinButton
         {...rest}
         min={min}
-        controlled
         style={{
           [DATA_VALUE]: () =>
             `${((dragging() ? unrounded() : rest.value()) / range) * 100}%`,
@@ -62,7 +61,7 @@ export const NumberInput = (props: NumberInputProps) => {
 
               batch(() => {
                 unrounded(value);
-                rest.onChange(value);
+                rest.value(value);
 
                 if (first) dragging(true);
                 if (last) setTimeout(dragging, 0, false);

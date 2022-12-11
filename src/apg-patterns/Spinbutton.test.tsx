@@ -16,7 +16,6 @@ describe("Spinbutton", () => {
   const max = $<number | null>(null);
   const step = $<number | null>(null);
   const round = $<number | null>(null);
-  const controlled = $(true);
 
   render(
     <SpinButton
@@ -25,9 +24,7 @@ describe("Spinbutton", () => {
       min={min}
       max={max}
       step={step}
-      round={round}
-      controlled={controlled}
-      onChange={value}
+      scale={round}
     >
       <SpinText />
 
@@ -49,7 +46,6 @@ describe("Spinbutton", () => {
       max(null);
       step(null);
       round(null);
-      controlled(true);
     });
   });
 
@@ -124,15 +120,5 @@ describe("Spinbutton", () => {
 
     await userEvent.keyboard(key);
     expect(value()).toBe(expected);
-  });
-
-  test("Uncontrolled", async () => {
-    controlled(false);
-    value(1);
-    expect(button.getAttribute("aria-valuenow")).toBe("0");
-
-    await userEvent.click(controls[0]);
-    expect(button.getAttribute("aria-valuenow")).toBe("-1");
-    expect(value()).toBe(-1);
   });
 });

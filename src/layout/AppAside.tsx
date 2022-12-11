@@ -17,7 +17,7 @@ export const AppAside = () => {
 
   return (
     <SplitPrimaryPane as="aside" class={css.AppAside}>
-      <TabProvider label="App Tabs" value={appTool} vertical onChange={appTool}>
+      <TabProvider label="App Tabs" value={appTool} vertical>
         <AppBar />
 
         <SplitWindow
@@ -34,14 +34,8 @@ export const AppAside = () => {
 
           <SplitSecondaryPane>
             <TabPanel value="select">
-              <NumberInput
-                label="width"
-                value={w}
-                max={10}
-                unit="px"
-                onChange={w}
-              />
-              <NumberInput label="height" value={h} max={1024} onChange={h} />
+              <NumberInput label="width" value={w} max={10} unit="X" />
+              <NumberInput label="height" value={h} max={1024} unit="Y" />
             </TabPanel>
 
             <TabPanel value="draw">DrawPanel</TabPanel>

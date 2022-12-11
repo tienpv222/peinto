@@ -14,7 +14,6 @@ describe("WindowSplitter", () => {
   const max = $<number>();
   const vertical = $<boolean>();
   const reverse = $<boolean>();
-  const controlled = $(true);
 
   render(
     <SplitWindow
@@ -23,7 +22,6 @@ describe("WindowSplitter", () => {
       min={min}
       max={max}
       vertical={vertical}
-      controlled={controlled}
     >
       <SplitPrimaryPane />
       <Splitter />
@@ -44,7 +42,6 @@ describe("WindowSplitter", () => {
       max(undefined);
       vertical(undefined);
       reverse(undefined);
-      controlled(true);
     });
   });
 
@@ -101,9 +98,12 @@ describe("WindowSplitter", () => {
   ] as const)(
     "Value [%s] [min=%s] [max=%s]",
     (value_, min_, max_, expected) => {
-      value(value_);
-      min(min_);
-      max(max_);
+      batch(() => {
+        value(value_);
+        min(min_);
+        max(max_);
+      });
+
       expect(splitter.getAttribute("aria-valuenow")).toBe(expected);
     }
   );

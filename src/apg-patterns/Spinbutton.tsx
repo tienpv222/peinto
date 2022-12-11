@@ -1,40 +1,30 @@
+import { $$, createContext, FunctionMaybe, h, useContext } from "voby";
 import {
-  $,
-  $$,
-  batch,
-  createContext,
-  FunctionMaybe,
-  h,
-  Observable,
-  ObservableReadonly,
-  useContext,
-  useEffect,
-  useMemo,
-} from "voby";
-import { assumeType, isNumber, Nullable, round } from "/src/utils/common";
-import { Component, PolyProps } from "/src/utils/voby";
+  assumeType,
+  clamp,
+  isNumber,
+  Nullable,
+  round,
+} from "/src/utils/common";
+import {
+  Component,
+  control,
+  Control,
+  ControlMaybe,
+  PolyProps,
+  useTransform,
+} from "/src/utils/voby";
 import { ariaLabel } from "/src/utils/wai-aria";
-
-/** VARS */
-
-const MIN = -Number.MAX_VALUE;
-const MAX = Number.MAX_VALUE;
-const STEP = 1;
-const ROUND = 0;
-
-const SpinContext = createContext<Context>();
 
 /** TYPES */
 
 type Context = {
-  value: Observable<number>;
-  max: ObservableReadonly<Nullable<number>>;
+  value: Control<number>;
+  max: Control<Nullable<number>>;
 
   min?: FunctionMaybe<Nullable<number>>;
   step?: FunctionMaybe<Nullable<number>>;
-  round?: FunctionMaybe<Nullable<number>>;
-  controlled?: FunctionMaybe<Nullable<boolean>>;
-  onChange?: Nullable<(value: number) => void>;
+  scale?: FunctionMaybe<Nullable<number>>;
 };
 
 export type SpinButtonProps<T = "div"> = PolyProps<
@@ -42,9 +32,8 @@ export type SpinButtonProps<T = "div"> = PolyProps<
   Context,
   {
     label: FunctionMaybe<string>;
-    value: FunctionMaybe<number>;
-    max?: FunctionMaybe<Nullable<number>>;
-    controlled?: FunctionMaybe<Nullable<boolean>>;
+    value: ControlMaybe<number>;
+    max?: ControlMaybe<Nullable<number>>;
   }
 >;
 
@@ -52,21 +41,18 @@ export type SpinTextProps<T = "input"> = PolyProps<T>;
 export type SpinIncrementProps<T = "button"> = PolyProps<T>;
 export type SpinDecrementProps<T = "button"> = PolyProps<T>;
 
+/** VARS */
+
+const STEP = 1;
+const SCALE = 0;
+
+const SpinContext = createContext<Context>();
+
 /** METHODS */
 
-const setValue = (ctx: Context, value: number, controlled = ctx.controlled) => {
-  value = Math.max(value, $$(ctx.min) ?? MIN);
-  value = Math.min(value, ctx.max() ?? MAX);
-  value = round(value, $$(ctx.round) ?? ROUND);
-
-  batch(() => {
-    $$(controlled) || ctx.value(value);
-    ctx.onChange?.(value);
-  });
-};
-
-const moveValue = (ctx: Context, stepMultiplier: number) => {
-  setValue(ctx, ctx.value() + ($$(ctx.step) ?? STEP) * stepMultiplier);
+const moveValue = (ctx: Context, stepMultiply: number) => {
+  const step = $$(ctx.step) ?? STEP;
+  ctx.value(ctx.value() + step * stepMultiply);
 };
 
 /** COMPONENTS */
@@ -74,45 +60,40 @@ const moveValue = (ctx: Context, stepMultiplier: number) => {
 export const SpinButton = <T extends Component = "div">(
   props: SpinButtonProps<T>
 ) => {
-  const {
-    as,
-    label,
-    value,
-    min,
-    max,
-    step,
-    round,
-    controlled,
-    onChange,
-    ...rest
-  } = props;
+  const { as, label, value, min, max, step, scale, ...rest } = props;
 
   const ctx: Context = {
     min,
     step,
-    round,
-    onChange,
-    controlled,
+    scale,
 
-    value: $(0),
-    max: useMemo(() => {
-      const $$max = $$(max);
-      return isNumber($$max) ? Math.max($$max, $$(min) ?? MIN) : $$max;
-    }),
+    value: control(value),
+    max: control(max),
   };
 
-  let init = true;
-  useEffect(() => {
-    if (!init && !$$(ctx.controlled)) return;
+  useTransform(
+    ctx.max,
+    (value, min) => (isNumber(value) ? clamp(value, min) : value),
+    ctx.min
+  );
 
-    init = false;
-    setValue(ctx, $$(value), false);
-  });
+  useTransform(
+    ctx.value,
+    (value, min, max, scale) => {
+      value = clamp(value, min, max);
+      value = round(value, scale ?? SCALE);
+      return value;
+    },
+    ctx.min,
+    ctx.max,
+    ctx.scale
+  );
 
   return h(SpinContext.Provider, {
     value: ctx,
     children: h(as ?? "div", {
       ...rest,
+
       role: "spinbutton",
       "aria-valuenow": ctx.value,
       "aria-valuemin": ctx.min,
@@ -130,13 +111,12 @@ export const SpinText = <T extends Component = "input">(
 
   return h(as ?? "input", {
     ...rest,
-
     type: "number",
     value: ctx.value,
 
     onChange({ target }: InputEvent) {
       assumeType<HTMLInputElement>(target);
-      setValue(ctx, Number(target.value));
+      ctx.value(Number(target.value));
     },
 
     onKeyDown(event: KeyboardEvent) {
