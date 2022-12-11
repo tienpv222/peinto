@@ -2,4 +2,4 @@ import { $ } from "voby";
 
 /** VARS */
 
-export const appSplitter = $(0);
+export const appSplit = $(0);

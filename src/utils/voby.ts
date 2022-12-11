@@ -1,5 +1,5 @@
 import { SYMBOL_OBSERVABLE, SYMBOL_OBSERVABLE_WRITABLE } from "oby";
-import { $, $$, useEffect, useResolved } from "voby";
+import { $, $$, untrack, useEffect, useResolved } from "voby";
 import { Component, ComponentFunction, FunctionMaybe } from "voby/dist/types";
 import { isFunction, JoinAfter, Nullable } from "./common";
 
@@ -33,24 +33,14 @@ export type ResolvedFunctionMaybeArray<T> = T extends [
   FunctionMaybe<infer U>,
   ...infer V
 ]
-  ? [U, ...ResolvedFunctionMaybeArray<V>]
-  : [];
+  ? readonly [U, ...ResolvedFunctionMaybeArray<V>]
+  : readonly [];
 
 /** VARS */
 
 const SYMBOL_UNSET = Symbol();
 
 /** METHODS */
-
-export const control = <T>(value: ControlMaybe<T>): Control<T> => {
-  return !isFunction(value)
-    ? $(value)
-    : !value.length ||
-      !(SYMBOL_OBSERVABLE in value) ||
-      !(SYMBOL_OBSERVABLE_WRITABLE in value)
-    ? $($$(value))
-    : value;
-};
 
 export const joinRefs = (
   ref: JSX.Ref<HTMLElement>,
@@ -68,23 +58,48 @@ export const joinStyles = (
 
 /** HOOKS */
 
-export function useTransform<T, V extends FunctionMaybe[]>(
+export const useControl = <T>(value: ControlMaybe<T>): Control<T> => {
+  return !isFunction(value)
+    ? $(value)
+    : !value.length ||
+      !(SYMBOL_OBSERVABLE in value) ||
+      !(SYMBOL_OBSERVABLE_WRITABLE in value)
+    ? $($$(value))
+    : value;
+};
+
+export const useTrack = <T extends FunctionMaybe[]>(
+  handler: (
+    values: ResolvedFunctionMaybeArray<T>,
+    valuesPrev: ResolvedFunctionMaybeArray<T>
+  ) => void,
+  ...dependencies: T
+) => {
+  let valuesPrev: any;
+
+  useEffect(() => {
+    const values = useResolved(dependencies);
+
+    untrack(() => handler(values as any, valuesPrev ?? values));
+    valuesPrev = values;
+  });
+};
+
+export const useTransform = <T, V extends FunctionMaybe[]>(
   control: Control<T>,
   transform: (value: T, ...deps: ResolvedFunctionMaybeArray<V>) => T,
   ...dependencies: V
-) {
-  let valuePrev = SYMBOL_UNSET as T;
-  let depsPrev = [] as any;
+) => {
+  let transformed: any = SYMBOL_UNSET;
 
-  useEffect(() => {
-    const value = control();
-    const deps = useResolved(dependencies);
-    const depsChanged = deps.some((v, i) => v !== depsPrev[i]);
+  useTrack(
+    ([value, ...deps], [valuePrev]) => {
+      if (value !== valuePrev && value === transformed) return;
 
-    if (value === valuePrev && !depsChanged) return;
-
-    depsPrev = deps;
-    valuePrev = transform(value, ...depsPrev);
-    control(valuePrev);
-  });
-}
+      transformed = transform(value as T, ...(deps as any));
+      control(transformed);
+    },
+    control,
+    ...dependencies
+  );
+};

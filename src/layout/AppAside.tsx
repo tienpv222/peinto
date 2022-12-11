@@ -1,6 +1,6 @@
 import { $ } from "voby";
 import css from "./AppAside.module.scss";
-import { appAsideSplitter, appTool } from "./AppAside.state";
+import { appAsideSplit, appTool } from "./AppAside.state";
 import { AppBar } from "./AppBar";
 import { TabPanel, TabProvider } from "/src/apg-patterns/Tabs";
 import {
@@ -22,10 +22,9 @@ export const AppAside = () => {
 
         <SplitWindow
           label="App Panels"
-          value={appAsideSplitter}
+          value={appAsideSplit}
           vertical
           reverse
-          onChange={appAsideSplitter}
           class={css.AppPanels}
         >
           <SplitPrimaryPane>LayerPanel</SplitPrimaryPane>

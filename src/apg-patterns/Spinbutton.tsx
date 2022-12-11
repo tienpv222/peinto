@@ -8,10 +8,10 @@ import {
 } from "/src/utils/common";
 import {
   Component,
-  control,
   Control,
   ControlMaybe,
   PolyProps,
+  useControl,
   useTransform,
 } from "/src/utils/voby";
 import { ariaLabel } from "/src/utils/wai-aria";
@@ -27,7 +27,7 @@ type Context = {
   scale?: FunctionMaybe<Nullable<number>>;
 };
 
-export type SpinButtonProps<T = "div"> = PolyProps<
+export type SpinbuttonProps<T = "div"> = PolyProps<
   T,
   Context,
   {
@@ -57,8 +57,8 @@ const moveValue = (ctx: Context, stepMultiply: number) => {
 
 /** COMPONENTS */
 
-export const SpinButton = <T extends Component = "div">(
-  props: SpinButtonProps<T>
+export const Spinbutton = <T extends Component = "div">(
+  props: SpinbuttonProps<T>
 ) => {
   const { as, label, value, min, max, step, scale, ...rest } = props;
 
@@ -67,8 +67,8 @@ export const SpinButton = <T extends Component = "div">(
     step,
     scale,
 
-    value: control(value),
-    max: control(max),
+    value: useControl(value),
+    max: useControl(max),
   };
 
   useTransform(

@@ -11,11 +11,11 @@ import { clamp, createId, Nullable, round } from "/src/utils/common";
 import {
   Component,
   Control,
-  control,
   ControlMaybe,
   joinRefs,
   joinStyles,
   PolyProps,
+  useControl,
   useTransform,
 } from "/src/utils/voby";
 import { ariaLabel } from "/src/utils/wai-aria";
@@ -84,9 +84,9 @@ export const SplitWindow = <T extends Component = "div">(
     reverse,
 
     id: createId(),
-    value: control(value),
-    min: control(min),
-    max: control(max),
+    value: useControl(value),
+    min: useControl(min),
+    max: useControl(max),
   };
 
   useTransform(ctx.min, (value) => round(clamp(value, MIN, MAX), ROUND));

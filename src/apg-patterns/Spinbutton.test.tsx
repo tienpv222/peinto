@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test } from "vitest";
 import { $, batch, render } from "voby";
 import {
-  SpinButton,
+  Spinbutton,
   SpinDecrement,
   SpinIncrement,
   SpinText,
@@ -15,22 +15,22 @@ describe("Spinbutton", () => {
   const min = $<number | null>(null);
   const max = $<number | null>(null);
   const step = $<number | null>(null);
-  const round = $<number | null>(null);
+  const scale = $<number | null>(null);
 
   render(
-    <SpinButton
+    <Spinbutton
       label={label}
       value={value}
       min={min}
       max={max}
       step={step}
-      scale={round}
+      scale={scale}
     >
       <SpinText />
 
       <SpinDecrement />
       <SpinIncrement />
-    </SpinButton>,
+    </Spinbutton>,
     document.body
   );
 
@@ -45,7 +45,7 @@ describe("Spinbutton", () => {
       min(null);
       max(null);
       step(null);
-      round(null);
+      scale(null);
     });
   });
 
@@ -98,7 +98,7 @@ describe("Spinbutton", () => {
     "Control click [step=%s] [round=%s]",
     async (stepVal, roundVal, decreased, increased) => {
       step(stepVal);
-      round(roundVal);
+      scale(roundVal);
 
       await userEvent.click(controls[0]);
       expect(value()).toBe(decreased);

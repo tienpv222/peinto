@@ -1,5 +1,5 @@
 import css from "./App.module.scss";
-import { appSplitter } from "./App.state";
+import { appSplit } from "./App.state";
 import { AppAside } from "./AppAside";
 import {
   SplitSecondaryPane,
@@ -9,13 +9,7 @@ import {
 
 export const App = () => {
   return (
-    <SplitWindow
-      label="App"
-      value={appSplitter}
-      reverse
-      onChange={appSplitter}
-      class={css.App}
-    >
+    <SplitWindow label="App" value={appSplit} reverse class={css.App}>
       <AppAside />
       <Splitter />
       <SplitSecondaryPane>foo</SplitSecondaryPane>

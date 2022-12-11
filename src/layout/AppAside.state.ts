@@ -2,4 +2,4 @@ import { $ } from "voby";
 
 export const appTool = $("select");
 
-export const appAsideSplitter = $(60);
+export const appAsideSplit = $(60);

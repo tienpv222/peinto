@@ -13,11 +13,11 @@ import {
 import { assumeType, createId, JoinAfter, Nullable } from "/src/utils/common";
 import {
   Component,
-  control,
   Control,
   ControlMaybe,
   joinRefs,
   PolyProps,
+  useControl,
 } from "/src/utils/voby";
 import { ariaDisabled, ariaLabel, ariaOrientation } from "/src/utils/wai-aria";
 
@@ -80,7 +80,7 @@ const getIds = ({ id }: Context, value: string) => {
 
 export const TabProvider = (props: TabProviderProps) => {
   const { value, children, ...rest } = props;
-  const ctxValue = control(value);
+  const ctxValue = useControl(value);
 
   const ctx: Context = {
     ...rest,

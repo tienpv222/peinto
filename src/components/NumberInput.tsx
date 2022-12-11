@@ -2,7 +2,7 @@ import { DragGesture } from "@use-gesture/vanilla";
 import { $, batch, useCleanup } from "voby";
 import css from "./NumberInput.module.scss";
 import {
-  SpinButton,
+  Spinbutton,
   SpinDecrement,
   SpinIncrement,
   SpinText,
@@ -40,7 +40,7 @@ export const NumberInput = (props: NumberInputProps) => {
     <label class={css.NumberInput}>
       <span children={rest.label} />
 
-      <SpinButton
+      <Spinbutton
         {...rest}
         min={min}
         style={{
@@ -81,7 +81,7 @@ export const NumberInput = (props: NumberInputProps) => {
           <SpinIncrement />
           <SpinDecrement />
         </div>
-      </SpinButton>
+      </Spinbutton>
     </label>
   );
 };
