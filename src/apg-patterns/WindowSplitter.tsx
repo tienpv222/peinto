@@ -15,7 +15,6 @@ import {
   joinRefs,
   joinStyles,
   PolyProps,
-  useControl,
   useTransform,
 } from "/src/utils/voby";
 import { ariaLabel } from "/src/utils/wai-aria";
@@ -78,31 +77,33 @@ export const SplitWindow = <T extends Component = "div">(
 ) => {
   const { as, label, value, min, max, vertical, reverse, ...rest } = props;
 
+  const ctxMin = useTransform(min, (value) =>
+    round(clamp(value, MIN, MAX), ROUND)
+  );
+
+  const ctxMax = useTransform(
+    max,
+    (value, min) => round(clamp(value ?? MAX, min, MAX), ROUND),
+    ctxMin
+  );
+
+  const ctxValue = useTransform(
+    value,
+    (value, min, max) => round(clamp(value, min, max), ROUND),
+    ctxMin,
+    ctxMax
+  );
+
   const ctx: Context = {
     label,
     vertical,
     reverse,
 
     id: createId(),
-    value: useControl(value),
-    min: useControl(min),
-    max: useControl(max),
+    value: ctxValue,
+    min: ctxMin,
+    max: ctxMax,
   };
-
-  useTransform(ctx.min, (value) => round(clamp(value, MIN, MAX), ROUND));
-
-  useTransform(
-    ctx.max,
-    (value, min) => round(clamp(value ?? MAX, min, MAX), ROUND),
-    ctx.min
-  );
-
-  useTransform(
-    ctx.value,
-    (value, min, max) => round(clamp(value, min, max), ROUND),
-    ctx.min,
-    ctx.max
-  );
 
   return h(SplitContext.Provider, {
     value: ctx,

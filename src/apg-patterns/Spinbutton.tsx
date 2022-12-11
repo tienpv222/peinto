@@ -11,7 +11,6 @@ import {
   Control,
   ControlMaybe,
   PolyProps,
-  useControl,
   useTransform,
 } from "/src/utils/voby";
 import { ariaLabel } from "/src/utils/wai-aria";
@@ -62,32 +61,32 @@ export const Spinbutton = <T extends Component = "div">(
 ) => {
   const { as, label, value, min, max, step, scale, ...rest } = props;
 
-  const ctx: Context = {
-    min,
-    step,
-    scale,
-
-    value: useControl(value),
-    max: useControl(max),
-  };
-
-  useTransform(
-    ctx.max,
+  const ctxMax = useTransform(
+    max,
     (value, min) => (isNumber(value) ? clamp(value, min) : value),
-    ctx.min
+    min
   );
 
-  useTransform(
-    ctx.value,
+  const ctxValue = useTransform(
+    value,
     (value, min, max, scale) => {
       value = clamp(value, min, max);
       value = round(value, scale ?? SCALE);
       return value;
     },
-    ctx.min,
-    ctx.max,
-    ctx.scale
+    min,
+    ctxMax,
+    scale
   );
+
+  const ctx: Context = {
+    min,
+    step,
+    scale,
+
+    value: ctxValue,
+    max: ctxMax,
+  };
 
   return h(SpinContext.Provider, {
     value: ctx,

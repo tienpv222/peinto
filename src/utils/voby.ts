@@ -27,6 +27,7 @@ export type PolyProps<T, P0 = {}, P1 = {}, P2 = {}> = JoinAfter<
 >;
 
 export type Control<T = unknown> = (value?: T) => T;
+
 export type ControlMaybe<T = unknown> = T | Control<T>;
 
 export type ResolvedFunctionMaybeArray<T> = T extends [
@@ -86,20 +87,25 @@ export const useTrack = <T extends FunctionMaybe[]>(
 };
 
 export const useTransform = <T, V extends FunctionMaybe[]>(
-  control: Control<T>,
+  value: ControlMaybe<T>,
   transform: (value: T, ...deps: ResolvedFunctionMaybeArray<V>) => T,
   ...dependencies: V
-) => {
-  let transformed: any = SYMBOL_UNSET;
+): Control<T> => {
+  const control = useControl(value);
+  const transformed = $<any>(SYMBOL_UNSET);
 
   useTrack(
     ([value, ...deps], [valuePrev]) => {
-      if (value !== valuePrev && value === transformed) return;
+      if (value !== valuePrev && value === transformed()) return;
 
-      transformed = transform(value as T, ...(deps as any));
-      control(transformed);
+      value = transform(value as T, ...(deps as any));
+
+      transformed(value);
+      control(value as T);
     },
-    control,
+    value,
     ...dependencies
   );
+
+  return (...args: [T?]) => (args.length ? control(...args) : transformed());
 };
